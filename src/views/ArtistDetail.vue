@@ -164,8 +164,8 @@ const addSong = async (albumId, songName) => {
 
           <div v-else class="d-flex gap-2">
             <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
-              :style="{ backgroundColor: member?.themes?.light_two, color: member?.themes?.dark_one }" />
-            <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+              :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }" />
+            <button class="btn" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.light_one }"
               @click="addAlbum">
               Add
             </button>
@@ -193,7 +193,7 @@ const addSong = async (albumId, songName) => {
                   @end="updateSongOrder(album)" tag="ul" class="list-group list-group-flush mb-3">
                   <template #item="{ element, index }">
                     <li class="list-group-item d-flex justify-content-between align-items-center"
-                      :style="{ backgroundColor: member?.themes?.light_two, color: member?.themes?.dark_one }">
+                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
                       <span>#{{ index + 1 }} - {{ element.title }}</span>
                       <i class="fas fa-grip-lines text-muted"></i>
                     </li>
@@ -211,7 +211,7 @@ const addSong = async (albumId, songName) => {
                   <div v-if="album.addingSong" class="d-flex">
                     <input v-model="album.newSongName" placeholder="New song title"
                       class="form-control form-control-sm me-2"
-                      :style="{ backgroundColor: member?.themes?.light_two, color: member?.themes?.dark_one }"
+                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }"
                       @keyup.enter="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false" />
                     <button class="btn btn-sm"
                       :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
@@ -229,7 +229,7 @@ const addSong = async (albumId, songName) => {
 
       <!-- Album Ranking (Side Card) -->
       <div class="col-lg-4">
-        <div class="card" :style="{ backgroundColor: member?.themes?.light_two, color: member?.themes?.dark_one }">
+        <div class="card" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
           <div class="card-body">
             <h5 class="card-title">Album Ranking</h5>
 

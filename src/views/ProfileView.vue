@@ -118,7 +118,6 @@ const submitChanges = async () => {
           <div class="text-end">
             <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two || '#f5f5f5', color: member?.themes?.light_one}" @click="submitChanges">Update Profile</button>
           </div>
-
           <div v-if="error" class="text-danger mt-3">{{ error }}</div>
           <div v-if="success" class="text-success mt-3">{{ success }}</div>
         </div>
