@@ -1,0 +1,28 @@
+text-one {
+    color: black;
+}
+
+background-one {
+    background-color: black;
+}
+
+text-two {
+    color: gray;
+}
+
+background-two {
+    background-color: gray;
+}
+
+text-three {
+    color: white;
+}
+
+background-three {
+    background: white;
+}
+
+.logo-text {
+    font-size: 2vh;
+    font-weight: bold;
+}
