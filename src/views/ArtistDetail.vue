@@ -8,6 +8,7 @@ const route = useRoute()
 const artistId = route.params.id
 
 const artist = ref(null)
+const member = ref(null)
 const albums = ref([])
 const newAlbumName = ref('')
 const error = ref(null)
@@ -15,20 +16,42 @@ const showAlbumInput = ref(false)
 
 // Load artist and albums
 onMounted(async () => {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
+    error.value = 'Failed to retrieve user.';
+    return;
+  }
+
+  const user = userData.user;
+
   const { data: artistData, error: artistError } = await supabase
     .from('artists')
     .select('*')
     .eq('id', artistId)
-    .single()
+    .single();
 
   if (artistError) {
-    error.value = artistError.message
-    return
+    error.value = artistError.message;
+    return;
   }
 
-  artist.value = artistData
-  await loadAlbums()
-})
+  artist.value = artistData;
+  await loadAlbums();
+
+  const { data: memberData, error: memberError } = await supabase
+    .from('members')
+    .select('*, themes(*)')
+    .eq('member_id', user.id)
+    .single();
+
+  if (memberError) {
+    error.value = memberError.message;
+    return;
+  }
+
+  member.value = memberData;
+});
+
 
 const sortAlbumsByRank = () => {
   albums.value.sort((a, b) => (a.album_ranking ?? 999) - (b.album_ranking ?? 999))
@@ -125,45 +148,61 @@ const addSong = async (albumId, songName) => {
 
 <template>
   <div class="container-fluid py-4">
-    <div class="card mb-4">
+    <!-- Page header -->
+    <div class="card mb-4"
+      :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5', color: member?.themes?.dark_one || '#333' }">
       <div class="card-body">
         <h3>{{ artist?.name }}</h3>
 
+        <!-- Add album input toggle -->
         <div class="mt-3">
-          <button v-if="!showAlbumInput" class="btn btn-success" @click="showAlbumInput = true">
+          <button v-if="!showAlbumInput" class="btn"
+            :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+            @click="showAlbumInput = true">
             + Add Album
           </button>
 
-          <div v-else class="d-flex gap-2 mt-2">
-            <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name" />
-            <button class="btn btn-success" @click="addAlbum">Add</button>
-            <button class="btn btn-secondary" @click="showAlbumInput = false">Cancel</button>
+          <div v-else class="d-flex gap-2">
+            <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
+              :style="{ backgroundColor: member?.themes?.light_two, color: member?.themes?.dark_one }" />
+            <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+              @click="addAlbum">
+              Add
+            </button>
+            <button class="btn btn-secondary" @click="showAlbumInput = false">
+              Cancel
+            </button>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Main content row: albums on left, rankings on right -->
     <div class="row">
-      <!-- Album Cards Column -->
+      <!-- Albums and Songs -->
       <div class="col-lg-8">
         <div v-if="albums.length > 0" class="row">
           <div v-for="album in albums" :key="album.id" class="col-md-6 mb-4">
-            <div class="card shadow">
+            <div class="card shadow"
+              :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
               <div class="card-body">
                 <h5 class="card-title">{{ album.title }}</h5>
 
-                <draggable v-model="album.songs" :item-key="'id'" @end="updateSongOrder(album)" tag="ul"
-                  class="list-group list-group-flush mb-3">
-                  <template #item="{ element }">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                      <span>#{{ element.album_ranking ?? '–' }}</span>
-                      <span>{{ element.title }}</span>
-                      <i class="fas fa-grip-lines text-muted ms-2"></i>
+                <!-- Songs List (Draggable) -->
+                <draggable v-model="album.songs" item-key="id" :group="{ name: 'songs-' + album.id }"
+                  @end="updateSongOrder(album)" tag="ul" class="list-group list-group-flush mb-3">
+                  <template #item="{ element, index }">
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                      :style="{ backgroundColor: member?.themes?.light_two, color: member?.themes?.dark_one }">
+                      <span>#{{ index + 1 }} - {{ element.title }}</span>
+                      <i class="fas fa-grip-lines text-muted"></i>
                     </li>
                   </template>
                 </draggable>
 
+                <div v-if="album.songs.length === 0" class="text-muted mb-2">No songs yet</div>
 
+                <!-- Add Song Toggle/Input -->
                 <div>
                   <button class="btn btn-outline-primary btn-sm mb-2" @click="album.addingSong = !album.addingSong">
                     {{ album.addingSong ? 'Cancel' : '+ Add Song' }}
@@ -172,27 +211,32 @@ const addSong = async (albumId, songName) => {
                   <div v-if="album.addingSong" class="d-flex">
                     <input v-model="album.newSongName" placeholder="New song title"
                       class="form-control form-control-sm me-2"
+                      :style="{ backgroundColor: member?.themes?.light_two, color: member?.themes?.dark_one }"
                       @keyup.enter="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false" />
-                    <button class="btn btn-sm btn-success"
+                    <button class="btn btn-sm"
+                      :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
                       @click="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false">
                       Add
                     </button>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Album Ranking Sidebar -->
+      <!-- Album Ranking (Side Card) -->
       <div class="col-lg-4">
-        <div class="card shadow border-start border-4 border-primary">
+        <div class="card" :style="{ backgroundColor: member?.themes?.light_two, color: member?.themes?.dark_one }">
           <div class="card-body">
             <h5 class="card-title">Album Ranking</h5>
+
             <draggable v-model="albums" item-key="id" @end="updateAlbumOrder" tag="ul" class="list-group">
               <template #item="{ element, index }">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
+                <li class="list-group-item d-flex justify-content-between align-items-center"
+                  :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
                   <span>#{{ index + 1 }} - {{ element.title }}</span>
                   <i class="fas fa-grip-lines text-muted"></i>
                 </li>
@@ -203,9 +247,11 @@ const addSong = async (albumId, songName) => {
       </div>
     </div>
 
+    <!-- Error Message -->
     <p v-if="error" class="text-danger mt-3">{{ error }}</p>
   </div>
 </template>
+
 
 <style scoped>
 .list-group-item {
