@@ -4,7 +4,7 @@ import { supabase } from '@/supabaseClient'
 import { computed } from "vue";
 import { useStore } from "vuex";
 import SidenavList from "./SidenavList.vue";
-import tess from "@/assets/img/tess.png";
+import tess from "@/assets/img/tess.jpg";
 
 const user = ref(null)
 const error = ref(null)
@@ -13,7 +13,6 @@ const store = useStore();
 const isRTL = computed(() => store.state.isRTL);
 const layout = computed(() => store.state.layout);
 const sidebarType = computed(() => store.state.sidebarType);
-const darkMode = computed(() => store.state.darkMode);
 
 let userExists = false
 
@@ -54,8 +53,7 @@ onMounted(async () => {
 </script>
 <template>
 
-  <div v-show="layout === 'default'" class="min-height-300 position-absolute w-100"
-    :class="`${darkMode ? 'bg-transparent' : 'bg-success'}`" />
+  <div v-show="layout === 'default'" class="min-height-300 position-absolute w-100"/>
 
   <aside class="my-3 overflow-auto border-0 sidenav navbar navbar-vertical navbar-expand-xs border-radius-xl" :class="`${isRTL ? 'me-3 rotate-caret fixed-end' : 'fixed-start ms-3'}    
       ${layout === 'landing' ? 'bg-transparent shadow-none' : ' '

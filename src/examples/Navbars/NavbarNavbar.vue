@@ -26,7 +26,7 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl"
+  <nav class="navbar navbar-main navbar-light navbar-expand-lg px-0 m-4 shadow-none border-radius-xl"
     :class="isRTL ? 'top-0 position-sticky z-index-sticky' : ''" v-bind="$attrs" id="navbarBlur" data-scroll="true">
     <div class="px-3 py-1 container-fluid d-flex justify-content-between align-items-center">
       <div>
