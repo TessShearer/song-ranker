@@ -33,7 +33,7 @@ const handleLogout = async () => {
         <h6 class="mb-0">Welcome, {{ userName || 'Guest' }}</h6>
       </div>
       <div>
-        <button class="btn btn-outline-danger btn-sm" @click="handleLogout">
+        <button class="btn btn-outline-info btn-sm" @click="handleLogout">
           Logout
         </button>
       </div>
