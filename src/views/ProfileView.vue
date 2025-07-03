@@ -73,11 +73,17 @@ const submitChanges = async () => {
 <template>
   <main>
     <div class="container-fluid">
-      <div class="page-header min-height-200" style="margin-right: -24px; margin-left: -34%;">
-        <span class="mask" :style="{ backgroundColor: member?.themes?.dark_one || '#ccc', opacity: 0.6 }"></span>
+      <div class="page-header min-height-250 border-radius-xl mt-4" :style="{
+        backgroundImage: member?.themes?.header ? `url(${member.themes.header})` : '',
+        backgroundSize: 'cover',
+        backgroundPosition: 'bottom',
+        marginRight: '-24px',
+        marginLeft: '-34%',
+        position: 'relative',
+      }">
       </div>
 
-      <div class="card shadow-lg mt-n6" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5'}">
+      <div class="card shadow-lg mt-n6" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5' }">
         <div class="card-body p-3">
           <div class="h-100 px-4">
             <h5 class="mb-1">{{ member?.member_name || '...' }}</h5>
@@ -88,8 +94,8 @@ const submitChanges = async () => {
     </div>
 
     <div class="py-4 container-fluid">
-      <div class="card" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5'}">
-        <div class="card-body" >
+      <div class="card" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5' }">
+        <div class="card-body">
           <p class="text-uppercase text-sm">Information</p>
 
           <div class="row">
@@ -116,7 +122,9 @@ const submitChanges = async () => {
           </div>
 
           <div class="text-end">
-            <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two || '#f5f5f5', color: member?.themes?.light_one}" @click="submitChanges">Update Profile</button>
+            <button class="btn"
+              :style="{ backgroundColor: member?.themes?.dark_two || '#f5f5f5', color: member?.themes?.light_one }"
+              @click="submitChanges">Update Profile</button>
           </div>
           <div v-if="error" class="text-danger mt-3">{{ error }}</div>
           <div v-if="success" class="text-success mt-3">{{ success }}</div>
