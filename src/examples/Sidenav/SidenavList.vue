@@ -52,15 +52,9 @@ onMounted(async () => {
         </sidenav-item>
       </li>
 
-      <li class="mt-3 nav-item">
-        <h6 class="text-xs ps-4 text-uppercase font-weight-bolder opacity-6" :class="isRTL ? 'me-4' : 'ms-2'">
-          {{ isRTL ? 'صفحات المرافق' : 'ACCOUNT PAGES' }}
-        </h6>
-      </li>
-
       <li class="nav-item">
         <sidenav-item to="/profile" :class="getRoute() === 'profile' ? 'active' : ''"
-          :navText="isRTL ? 'حساب تعريفي' : 'Profile'">
+          :navText="isRTL ? 'حساب تعريفي' : 'Edit Settings'">
           <template #icon>
             <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
           </template>

@@ -16,7 +16,6 @@ Coded by www.creative-tim.com
 import { computed } from "vue";
 import { useStore } from "vuex";
 import Sidenav from "./examples/Sidenav/indexSidenav.vue";
-import Configurator from "@/examples/ConfiguratorExample.vue";
 import Navbar from "@/examples/Navbars/NavbarNavbar.vue";
 import AppFooter from "@/examples/FooterExample.vue";
 
@@ -28,9 +27,6 @@ const showSidenav = computed(() => store.state.showSidenav);
 const layout = computed(() => store.state.layout);
 const showNavbar = computed(() => store.state.showNavbar);
 const showFooter = computed(() => store.state.showFooter);
-const showConfig = computed(() => store.state.showConfig);
-const hideConfigButton = computed(() => store.state.hideConfigButton);
-const toggleConfigurator = () => store.commit("toggleConfigurator");
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -66,9 +62,5 @@ const navClasses = computed(() => {
 
     <app-footer v-show="showFooter" />
 
-    <configurator
-      :toggle="toggleConfigurator"
-      :class="[showConfig ? 'show' : '', hideConfigButton ? 'd-none' : '']"
-    />
   </main>
 </template>
