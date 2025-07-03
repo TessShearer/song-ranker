@@ -51,7 +51,7 @@ onMounted(async () => {
   <div class="collapse navbar-collapse w-auto h-auto h-100" id="sidenav-collapse-main">
     <ul class="navbar-nav">
       <li class="nav-item" v-for="member in members" :key="member.member_id">
-        <sidenav-item :to="`/members/${member.member_id}`" :navText="member.member_name" :path="member.themes?.image"
+        <sidenav-item to="'/tables'" :navText="member.member_name" :path="member.themes?.image" 
           :background="member.themes?.light_one" :text="member.themes?.dark_one" :class="getRoute() === `members/${member.member_id}` ? 'active' : ''">
         </sidenav-item>
       </li>

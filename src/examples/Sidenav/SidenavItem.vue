@@ -36,7 +36,7 @@ defineProps({
 });
 </script>
 <template>
-  <div class="nav-link my-2 rounded" :style="{ backgroundColor: background, color: text }" @click="minimizeSidebar">
+  <router-link :to="to" class="nav-link my-2 rounded" :style="{ backgroundColor: background, color: text }" @click="minimizeSidebar">
 
     <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
       <img :src="path" alt="Theme Image" class="rounded-circle"
@@ -45,5 +45,5 @@ defineProps({
     <span class="nav-link-text" :class="isRTL ? ' me-1' : 'ms-1'">{{
     navText
       }}</span>
-  </div>
+  </router-link>
 </template>

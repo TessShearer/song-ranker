@@ -6,6 +6,7 @@ import RTL from "../views/RtlView.vue";
 import Profile from "../views/ProfileView.vue";
 import Signup from "../views/SignUp.vue";
 import Signin from "../views/SignIn.vue";
+import ArtistDetail from "../views/ArtistDetail.vue"; 
 
 const routes = [
   {
@@ -48,6 +49,12 @@ const routes = [
     path: "/signup",
     name: "Signup",
     component: Signup,
+  },
+  {
+    path: "/artists/:id",
+    name: "ArtistDetail",
+    component: ArtistDetail,
+    props: true
   },
 ];
 
