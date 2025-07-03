@@ -43,7 +43,7 @@ const submitMember = async () => {
   const { error: insertError } = await supabase.from('members').insert([
     {
       member_id: user.value.id,
-      username: username.value,
+      member_name: username.value,
       theme_id: selectedThemeId.value,
     }
   ])
@@ -52,7 +52,6 @@ const submitMember = async () => {
     error.value = insertError.message
   } else {
     success.value = 'Member profile created successfully!'
-    // Optional: reload or navigate
     window.location.reload()
   }
 }
@@ -60,7 +59,7 @@ const submitMember = async () => {
 
 <template>
   <div class="card bg-transparent shadow-xl p-4">
-    <h4 class="mb-3">Set Up Your Profile</h4>
+    <h4 class="mb-3">Choose a display name and theme to get started.</h4>
 
     <div class="mb-3">
       <label class="form-label">Username</label>

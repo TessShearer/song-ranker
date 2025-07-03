@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/supabaseClient'
-import MasterCard from "@/examples/Cards/MasterCard.vue"
+import MemberAddCard from "@/examples/Cards/MemberAddCard.vue"
 
 const user = ref(null)
 const error = ref(null)
@@ -44,9 +44,9 @@ onMounted(async () => {
 <template>
   <div class="py-4 container-fluid">
 
-    <!-- If no member exists, show MasterCard only -->
+    <!-- If no member exists, show MemberAddCard only -->
     <div v-if="user && member.length === 0">
-      <MasterCard />
+      <MemberAddCard />
     </div>
 
     <!-- If member exists, show full dashboard -->

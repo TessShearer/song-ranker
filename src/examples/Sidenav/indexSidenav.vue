@@ -8,19 +8,18 @@ import tess from "@/assets/img/tess.jpg";
 
 const user = ref(null)
 const error = ref(null)
-const member = ref([])
 const store = useStore();
 const isRTL = computed(() => store.state.isRTL);
 const layout = computed(() => store.state.layout);
 const sidebarType = computed(() => store.state.sidebarType);
 
-let userExists = false
+let userExists = ref(false)
 
 onMounted(async () => {
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
 
   if (sessionError || !sessionData.session) {
-    userExists = false
+    userExists.value = false
   }
 
   const { data: userData, error: userError } = await supabase.auth.getUser()
@@ -39,12 +38,10 @@ onMounted(async () => {
       if (memberError) {
         error.value = memberError.message
       } else {
-        member.value = memberData
         if (memberData.length > 0) {
-          userExists = true
-        }
-        else {
-          userExists = false
+          userExists.value = true
+        } else {
+          userExists.value = false
         }
       }
     }
@@ -53,11 +50,11 @@ onMounted(async () => {
 </script>
 <template>
 
-  <div v-show="layout === 'default'" class="min-height-300 position-absolute w-100"/>
+  <div v-show="layout === 'default'" class="min-height-300 position-absolute w-100" />
 
   <aside class="my-3 overflow-auto border-0 sidenav navbar navbar-vertical navbar-expand-xs border-radius-xl" :class="`${isRTL ? 'me-3 rotate-caret fixed-end' : 'fixed-start ms-3'}    
       ${layout === 'landing' ? 'bg-transparent shadow-none' : ' '
-      } ${sidebarType}`" id="sidenav-main">
+    } ${sidebarType}`" id="sidenav-main">
 
     <div class="m-0 navbar-brand flex d-flex">
       <img :src="tess" alt="Tess" class="rounded-circle" style="min-width: 8vh; min-height: 8vh; object-fit: cover;" />
@@ -65,11 +62,13 @@ onMounted(async () => {
     </div>
 
     <hr class="mt-0 horizontal dark" />
-    <div v-if="!userExists">
-
-    </div>
-    <div v-else>
+    <template v-if="userExists">
       <sidenav-list />
-    </div>
+    </template>
+    <template v-else>
+      <div class="px-3 text-muted">Welcome! Set up your member profile to get started.</div>
+    </template>
+
+
   </aside>
 </template>
