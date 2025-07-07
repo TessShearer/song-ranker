@@ -1,12 +1,19 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'
 import { supabase } from '@/supabaseClient'
 import draggable from 'vuedraggable'
 
+const store = useStore()
 const route = useRoute()
 const memberId = route.params.memberId
 const artistId = route.params.artistId
+
+const user = computed(() => store.state.user)
+const signedInMember = computed(() => store.state.member)
+const isLoggedIn = computed(() => !!user.value)
+const isOwner = computed(() => isLoggedIn.value && signedInMember.value.music_id == memberId)
 
 const artist = ref(null)
 const member = ref(null)
@@ -14,7 +21,6 @@ const albums = ref([])
 const newAlbumName = ref('')
 const error = ref(null)
 const showAlbumInput = ref(false)
-const isOwner = ref(false)
 
 const loadAlbums = async () => {
   const { data, error: albumError } = await supabase
@@ -65,14 +71,12 @@ const addAlbum = async () => {
 
   const currentMaxRank = Math.max(...albums.value.map(a => a.album_ranking || 0), 0)
 
-  const { error: insertError } = await supabase.from('albums').insert([
-    {
-      title: newAlbumName.value,
-      artist_id: artistId,
-      member_id: memberId,
-      album_ranking: currentMaxRank + 1,
-    }
-  ])
+  const { error: insertError } = await supabase.from('albums').insert([{
+    title: newAlbumName.value,
+    artist_id: artistId,
+    member_id: memberId,
+    album_ranking: currentMaxRank + 1,
+  }])
 
   if (!insertError) {
     newAlbumName.value = ''
@@ -92,15 +96,13 @@ const addSong = async (albumId, songName) => {
   const existingRanks = album.songs.map(song => song.album_ranking || 0)
   const maxRank = Math.max(...existingRanks, 0)
 
-  const { error: insertError } = await supabase.from('songs').insert([
-    {
-      name: songName,
-      album_id: albumId,
-      artist_id: artistId,
-      member_id: memberId,
-      album_ranking: maxRank + 1,
-    }
-  ])
+  const { error: insertError } = await supabase.from('songs').insert([{
+    name: songName,
+    album_id: albumId,
+    artist_id: artistId,
+    member_id: memberId,
+    album_ranking: maxRank + 1,
+  }])
 
   if (!insertError) {
     await loadAlbums()
@@ -110,16 +112,6 @@ const addSong = async (albumId, songName) => {
 }
 
 onMounted(async () => {
-  // Get logged-in user
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-  if (userError || !userData.user) {
-    error.value = 'Failed to retrieve user.'
-    return
-  }
-
-  const loggedInUserId = userData.user.id
-  isOwner.value = loggedInUserId === memberId
-
   // Get artist
   const { data: artistData, error: artistError } = await supabase
     .from('artists')
@@ -131,10 +123,9 @@ onMounted(async () => {
     error.value = artistError?.message || 'Artist not found.'
     return
   }
-
   artist.value = artistData
 
-  // Get member and theme
+  // Get member (for theme)
   const { data: memberData, error: memberError } = await supabase
     .from('members')
     .select('*, themes(*)')
@@ -148,10 +139,10 @@ onMounted(async () => {
 
   member.value = memberData
 
-  // Finally load albums
   await loadAlbums()
 })
 </script>
+
 
 <template>
   <div class="container-fluid py-4">

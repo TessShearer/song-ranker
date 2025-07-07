@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import ArtistAddCard from '../../examples/Cards/ArtistAddCard.vue'
 import { supabase } from "@/supabaseClient";
 
@@ -11,7 +11,16 @@ const props = defineProps({
 
 const artists = ref([])
 const error = ref(null)
+const loading = ref(false)
 const showArtistModal = ref(false)
+
+// Computed theme styles
+const buttonStyle = computed(() => ({
+  backgroundColor: props.theme?.dark_two || '#198754',
+  color: props.theme?.light_one || '#fff'
+}))
+const tableTextColor = computed(() => props.theme?.dark_one || '#000')
+const tableBackground = computed(() => props.theme?.light_one || '#fff')
 
 onMounted(() => {
   if (props.memberMusicId) fetchArtists()
@@ -22,6 +31,7 @@ watch(() => props.memberMusicId, (newId) => {
 })
 
 const fetchArtists = async () => {
+  loading.value = true
   const { data, error: artistError } = await supabase
     .from('artists')
     .select(`
@@ -41,6 +51,7 @@ const fetchArtists = async () => {
       songCount: artist.songs[0]?.count || 0,
     }))
   }
+  loading.value = false
 }
 
 const handleArtistAdded = () => {
@@ -52,44 +63,64 @@ const handleArtistAdded = () => {
 <template>
   <div>
     <div class="mb-3" v-if="isOwner">
-      <button class="btn btn-large font-large ombre-overlay" @click="showArtistModal = true" :style="{
-      backgroundColor: theme?.dark_two || '#198754',
-      color: theme?.light_one || '#fff'
-    }">
+      <button class="btn btn-large font-large ombre-overlay" @click="showArtistModal = true" :style="buttonStyle">
         + &nbsp; Add Artist
       </button>
     </div>
 
-    <ArtistAddCard v-if="showArtistModal" :memberMusicId="memberMusicId" @cancel="showArtistModal = false"
-      @added="handleArtistAdded" />
+    <ArtistAddCard
+      v-if="showArtistModal"
+      :memberMusicId="memberMusicId"
+      @cancel="showArtistModal = false"
+      @added="handleArtistAdded"
+    />
 
-    <div class="card" :style="{ backgroundColor: theme?.light_one || '#fff' }">
+    <div class="card" :style="{ backgroundColor: tableBackground }">
       <div class="card-body px-0 pt-0 pb-2">
         <div class="table-responsive p-0">
           <table class="table align-items-center mb-0">
             <thead>
               <tr>
-                <th :style="{ color: theme?.dark_one || '#000' }">Artist</th>
-                <th :style="{ color: theme?.dark_one || '#000' }">Albums</th>
-                <th :style="{ color: theme?.dark_one || '#000' }">Songs</th>
+                <th :style="{ color: tableTextColor }">Artist</th>
+                <th :style="{ color: tableTextColor }">Albums</th>
+                <th :style="{ color: tableTextColor }">Songs</th>
                 <th>Rankings</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="artist in artists" :key="artist.id" style="cursor: pointer;" class="table-row-hover" :style="{
-      backgroundColor: theme?.light_one,
-      color: theme?.dark_one
-    }">
+              <tr
+                v-if="loading"
+                class="text-center"
+              >
+                <td colspan="4" class="py-4">
+                  <em>Loading artists...</em>
+                </td>
+              </tr>
+
+              <tr
+                v-for="artist in artists"
+                :key="artist.id"
+                style="cursor: pointer;"
+                class="table-row-hover"
+                :style="{ backgroundColor: tableBackground, color: tableTextColor }"
+              >
                 <td>{{ artist.name }}</td>
                 <td>{{ artist.albumCount }} Album{{ artist.albumCount !== 1 ? 's' : '' }}</td>
                 <td>{{ artist.songCount }} Song{{ artist.songCount !== 1 ? 's' : '' }}</td>
                 <td>
-                  <button class="btn ombre-overlay" @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)" :style="{
-      backgroundColor: theme?.light_two,
-      color: theme?.dark_one
-    }">
+                  <button
+                    class="btn ombre-overlay"
+                    @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)"
+                    :style="{ backgroundColor: props.theme?.light_two, color: tableTextColor }"
+                  >
                     {{ isOwner ? 'Rank' : 'View Rankings' }}
                   </button>
+                </td>
+              </tr>
+
+              <tr v-if="!loading && artists.length === 0">
+                <td colspan="4" class="text-center py-3 text-muted">
+                  No artists found.
                 </td>
               </tr>
             </tbody>

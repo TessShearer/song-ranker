@@ -1,22 +1,24 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { supabase } from '@/supabaseClient'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useStore } from 'vuex'
+import { supabase } from '@/supabaseClient'
 import ArtistsTable from './components/ArtistsTable.vue'
 
 const route = useRoute()
+const store = useStore()
+
 const memberId = route.params.memberId
+const loggedInUser = computed(() => store.state.user)
 
 const member = ref(null)
-const loggedInUserId = ref(null)
 const isOwner = ref(false)
 
 onMounted(async () => {
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-  if (userError || !userData?.user) return
+  // Don't fetch unless we know the user is logged in
+  if (!loggedInUser.value?.id) return
 
-  loggedInUserId.value = userData.user.id
-
+  // Fetch member data for the viewed profile
   const { data: memberData, error: memberError } = await supabase
     .from('members')
     .select('*, themes(*)')
@@ -25,7 +27,7 @@ onMounted(async () => {
 
   if (!memberError && memberData) {
     member.value = memberData
-    isOwner.value = loggedInUserId.value === memberData.member_id
+    isOwner.value = loggedInUser.value.id === memberData.member_id
   }
 })
 </script>
