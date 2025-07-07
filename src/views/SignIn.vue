@@ -1,11 +1,13 @@
 <script setup>
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeMount, onBeforeUnmount} from 'vue'
 import { supabase } from '@/supabaseClient'
 import { useRouter } from 'vue-router'
 import ArgonInput from "@/components/ArgonInput.vue";
 import ArgonSwitch from "@/components/ArgonSwitch.vue";
 import ArgonButton from "@/components/ArgonButton.vue";
+import { useStore } from "vuex";
+const store = useStore();
 
 const router = useRouter()
 
@@ -13,6 +15,14 @@ const router = useRouter()
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
+
+onBeforeMount(() => {
+  store.state.showNavbar = false;
+});
+onBeforeUnmount(() => {
+  store.state.showNavbar = true;
+
+});
 
 // Login function
 const signIn = async () => {
