@@ -52,10 +52,10 @@ onMounted(async () => {
     <ul class="navbar-nav">
 
       <!-- Dynamic member links -->
-      <li class="nav-item" v-for="member in members" :key="member.member_id">
-        <sidenav-item :to="`/members/${member.member_id}/tables`" :navText="member.member_name"
+      <li class="nav-item" v-for="member in members" :key="member.music_id">
+        <sidenav-item :to="`/members/${member.music_id}/tables`" :navText="member.member_name"
           :path="member.themes?.image" :background="member.themes?.light_one" :text="member.themes?.dark_one"
-          :class="getRoute() === `members/${member.member_id}/tables` ? 'active' : ''" />
+          :class="getRoute() === `members/${member.music_id}/tables` ? 'active' : ''" />
       </li>
 
       <!-- Settings link -->

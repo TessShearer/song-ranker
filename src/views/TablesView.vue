@@ -8,7 +8,7 @@ import ArtistsTable from './components/ArtistsTable.vue'
 const route = useRoute()
 const store = useStore()
 
-const memberId = route.params.memberId
+const musicId = route.params.memberId
 const loggedInUser = computed(() => store.state.user)
 
 const member = ref(null)
@@ -22,7 +22,7 @@ onMounted(async () => {
   const { data: memberData, error: memberError } = await supabase
     .from('members')
     .select('*, themes(*)')
-    .eq('member_id', memberId)
+    .eq('music_id', musicId)
     .single()
 
   if (!memberError && memberData) {
