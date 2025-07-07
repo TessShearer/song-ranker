@@ -34,7 +34,7 @@ const submitArtist = async () => {
     error.value = insertError.message
   } else {
     success.value = 'Artist added successfully!'
-    emit('added')  // let parent refresh and close modal
+    emit('added') 
   }
 }
 </script>
@@ -52,7 +52,7 @@ const submitArtist = async () => {
 
         <div class="d-flex justify-content-between">
           <button class="btn btn-outline-secondary" @click="$emit('cancel')">Cancel</button>
-          <button class="btn btn-primary" @click="submitArtist">Add Artist</button>
+          <button class="btn btn-secondary" @click="submitArtist">Add Artist</button>
         </div>
 
         <div v-if="error" class="text-danger mt-3">{{ error }}</div>

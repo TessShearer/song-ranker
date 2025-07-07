@@ -148,34 +148,34 @@ const addSong = async (albumId, songName) => {
 
 <template>
   <div class="container-fluid py-4">
+
     <!-- Page header -->
     <div class="card mb-4"
       :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5', color: member?.themes?.dark_one || '#333' }">
-      <div class="card-body">
-        <h3>{{ artist?.name }}</h3>
+      <div class="card-body d-flex flex-wrap align-items-center justify-content-between">
+        <h3 class="mb-0">{{ artist?.name }}</h3>
 
-        <!-- Add album input toggle -->
-        <div class="mt-3">
-          <button v-if="!showAlbumInput" class="btn"
-            :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+        <div v-if="!showAlbumInput">
+          <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
             @click="showAlbumInput = true">
             + Add Album
           </button>
+        </div>
 
-          <div v-else class="d-flex gap-2">
-            <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
-              :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }" />
-            <button class="btn" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.light_one }"
-              @click="addAlbum">
-              Add
-            </button>
-            <button class="btn btn-secondary" @click="showAlbumInput = false">
-              Cancel
-            </button>
-          </div>
+        <div v-else class="d-flex gap-2 mt-2 w-100 flex-wrap">
+          <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
+            :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }" />
+          <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+            @click="addAlbum">
+            Add
+          </button>
+          <button class="btn btn-secondary" @click="showAlbumInput = false">
+            Cancel
+          </button>
         </div>
       </div>
     </div>
+
 
     <!-- Main content row: albums on left, rankings on right -->
     <div class="row">

@@ -43,6 +43,15 @@ onMounted(async () => {
 
 <template>
   <div class="py-4 container-fluid">
+    <div class="page-header min-height-250 mt-4" :style="{
+      backgroundImage: member?.themes?.header ? `url(${member.themes.header})` : '',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      marginRight: '-24px',
+      marginLeft: '-34%',
+      position: 'relative',
+    }">
+    </div>
 
     <!-- If no member exists, show MemberAddCard only -->
     <div v-if="user && member.length === 0">

@@ -62,13 +62,6 @@ const handleArtistAdded = () => {
 
 <template>
   <div>
-    <div class="card mb-3" :style="{ backgroundColor: theme?.light_one || '#f5f5f5' }">
-      <div class="card-body px-3 py-2">
-        <h6 :style="{ color: theme?.dark_one || '#333' }">
-          You can add artists whose songs you want to rank here.
-        </h6>
-      </div>
-    </div>
 
     <div class="mb-3">
       <button class="btn btn-large font-large" @click="showArtistModal = true" :style="{

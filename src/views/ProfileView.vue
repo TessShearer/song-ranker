@@ -73,21 +73,21 @@ const submitChanges = async () => {
 <template>
   <main>
     <div class="container-fluid">
-      <div class="page-header min-height-250 border-radius-xl mt-4" :style="{
+      <div class="page-header min-height-250 mt-4" :style="{
         backgroundImage: member?.themes?.header ? `url(${member.themes.header})` : '',
         backgroundSize: 'cover',
-        backgroundPosition: 'bottom',
+        backgroundPosition: 'center',
         marginRight: '-24px',
         marginLeft: '-34%',
         position: 'relative',
       }">
       </div>
 
-      <div class="card shadow-lg mt-n6" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5' }">
+      <div class="card shadow-lg mt-n6" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5'}">
         <div class="card-body p-3">
           <div class="h-100 px-4">
             <h5 class="mb-1">{{ member?.member_name || '...' }}</h5>
-            <p class="mb-0 font-weight-bold text-sm">Customize your profile and theme below</p>
+            <p class="mb-0 font-weight-bold text-sm">Customize your profile and theme</p>
           </div>
         </div>
       </div>

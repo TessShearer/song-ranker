@@ -26,3 +26,9 @@ background-three {
     font-size: 2vh;
     font-weight: bold;
 }
+
+/* In your main CSS */
+body.theme-dark {
+    background-color: #1a1a1a;
+  }
+  
