@@ -138,7 +138,7 @@ onMounted(async () => {
   const { data: memberData, error: memberError } = await supabase
     .from('members')
     .select('*, themes(*)')
-    .eq('member_id', memberId)
+    .eq('music_id', memberId)
     .single()
 
   if (memberError || !memberData) {
