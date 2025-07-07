@@ -1,21 +1,14 @@
 <script setup>
-import { ref } from 'vue'
-// import { useRouter } from 'vue-router'
+import { ref, onMounted, onBeforeMount, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 import { supabase } from '@/supabaseClient'
-import { onBeforeMount, onBeforeUnmount } from "vue";
-import { useStore } from "vuex";
-const store = useStore();
+import { useStore } from 'vuex'
 
-import ArgonInput from "@/components/ArgonInput.vue";
-import ArgonButton from "@/components/ArgonButton.vue";
+import ArgonInput from "@/components/ArgonInput.vue"
+import ArgonButton from "@/components/ArgonButton.vue"
 
-onBeforeMount(() => {
-  store.state.showNavbar = false;
-});
-onBeforeUnmount(() => {
-  store.state.showNavbar = true;
-
-});
+const store = useStore()
+const router = useRouter()
 
 // Form state
 const name = ref('')
@@ -24,8 +17,27 @@ const password = ref('')
 const errorMessage = ref('')
 const successMessage = ref('')
 
-// const router = useRouter()
+// Hide layout elements while on auth page
+onBeforeMount(() => {
+  store.state.layout = 'auth'
+  store.state.showNavbar = false
+})
 
+onBeforeUnmount(() => {
+  store.state.layout = 'default'
+  store.state.showNavbar = true
+})
+
+// Redirect if already logged in
+onMounted(async () => {
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+  if (!sessionError && sessionData.session) {
+    await store.dispatch('fetchUser')
+    router.push('/dashboard-default')
+  }
+})
+
+// Sign up handler
 const signUp = async () => {
   errorMessage.value = ''
   successMessage.value = ''
@@ -43,27 +55,19 @@ const signUp = async () => {
   if (error) {
     errorMessage.value = error.message
   } else {
-    successMessage.value = 'Signup successful! Please check your email to confirm your account.'
-    console.log('User signed up:', data)
-    // Optionally redirect after a delay
-    // setTimeout(() => router.push('/signin'), 2000)
     const { user } = data
-
     if (!user) {
-      errorMessage.value = "User not available yet, please confirm your email first."
+      errorMessage.value = "Signup successful. Please confirm your email before logging in."
       return
     }
 
-    console.log('Signed up user:', user)
-
-
+    successMessage.value = 'Signup successful! Please check your email to confirm your account.'
+    console.log('User signed up:', user)
   }
 }
-
 </script>
 
 <template>
-
   <main class="mt-0 main-content">
     <section>
       <div class="page-header min-vh-100">
@@ -72,20 +76,42 @@ const signUp = async () => {
             <div class="mx-auto col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0">
               <div class="card card-plain">
                 <div class="pb-0 card-header text-start">
-                  <h4 class="font-weight-bolder">Sign In</h4>
-                  <p class="mb-0">Enter your email and password to sign in</p>
+                  <h4 class="font-weight-bolder">Sign Up</h4>
+                  <p class="mb-0">Create your account below</p>
                 </div>
                 <div class="card-body">
                   <form role="form">
-                    <argon-input v-model="name" id="name" type="text" placeholder="Name" aria-label="Name" />
-                    <argon-input v-model="email" id="email" type="email" placeholder="Email" aria-label="Email" />
-                    <argon-input v-model="password" id="password" type="password" placeholder="Password"
-                      aria-label="Password" />
+                    <argon-input
+                      v-model="name"
+                      id="name"
+                      type="text"
+                      placeholder="Name"
+                      aria-label="Name"
+                    />
+                    <argon-input
+                      v-model="email"
+                      id="email"
+                      type="email"
+                      placeholder="Email"
+                      aria-label="Email"
+                    />
+                    <argon-input
+                      v-model="password"
+                      id="password"
+                      type="password"
+                      placeholder="Password"
+                      aria-label="Password"
+                    />
                     <div class="text-center">
-                      <argon-button fullWidth class="my-4 mb-2 custom-signup-btn" @click.prevent="signUp">
+                      <argon-button
+                        fullWidth
+                        class="my-4 mb-2 custom-signup-btn"
+                        @click.prevent="signUp"
+                      >
                         Sign up
                       </argon-button>
                     </div>
+
                     <p v-if="errorMessage" class="text-danger text-sm text-center">{{ errorMessage }}</p>
                     <p v-if="successMessage" class="text-success text-sm text-center">{{ successMessage }}</p>
 
@@ -102,7 +128,6 @@ const signUp = async () => {
       </div>
     </section>
   </main>
-
 </template>
 
 <style scoped>
@@ -111,8 +136,7 @@ const signUp = async () => {
   color: white;
   border: none;
 }
-
-.custom-login-btn:hover {
+.custom-signup-btn:hover {
   opacity: 0.95;
 }
 </style>

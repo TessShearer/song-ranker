@@ -1,7 +1,9 @@
 import { createStore } from "vuex";
+import { supabase } from "@/supabaseClient";
 
 export default createStore({
   state: {
+    // Layout-related
     hideConfigButton: false,
     isPinned: false,
     showConfig: false,
@@ -17,20 +19,27 @@ export default createStore({
     showFooter: true,
     showMain: true,
     layout: "default",
+
+    // Auth/session-related
+    user: null,
+    member: null,
+    theme: null,
   },
+
   mutations: {
+    // Layout
     toggleConfigurator(state) {
       state.showConfig = !state.showConfig;
     },
     sidebarMinimize(state) {
-      let sidenav_show = document.querySelector("#app");
+      const sidenavShow = document.querySelector("#app");
       if (state.isPinned) {
-        sidenav_show.classList.add("g-sidenav-hidden");
-        sidenav_show.classList.remove("g-sidenav-pinned");
+        sidenavShow.classList.add("g-sidenav-hidden");
+        sidenavShow.classList.remove("g-sidenav-pinned");
         state.isPinned = false;
       } else {
-        sidenav_show.classList.add("g-sidenav-pinned");
-        sidenav_show.classList.remove("g-sidenav-hidden");
+        sidenavShow.classList.add("g-sidenav-pinned");
+        sidenavShow.classList.remove("g-sidenav-hidden");
         state.isPinned = true;
       }
     },
@@ -38,17 +47,56 @@ export default createStore({
       state.sidebarType = payload;
     },
     navbarFixed(state) {
-      if (state.isNavFixed === false) {
-        state.isNavFixed = true;
-      } else {
-        state.isNavFixed = false;
-      }
+      state.isNavFixed = !state.isNavFixed;
+    },
+
+    // Auth
+    setUser(state, user) {
+      state.user = user;
+    },
+    setMember(state, member) {
+      state.member = member;
+      state.theme = member?.themes || null;
+    },
+    clearAuth(state) {
+      state.user = null;
+      state.member = null;
+      state.theme = null;
     },
   },
+
   actions: {
     toggleSidebarColor({ commit }, payload) {
       commit("sidebarType", payload);
     },
+
+    // Fetch user + member info from Supabase and commit to store
+    async fetchUser({ commit }) {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+
+      if (!userError && userData?.user) {
+        commit("setUser", userData.user);
+
+        const { data: memberData, error: memberError } = await supabase
+          .from("members")
+          .select("*, themes(*)")
+          .eq("member_id", userData.user.id)
+          .single();
+
+        if (!memberError && memberData) {
+          commit("setMember", memberData);
+        }
+      }
+    },
+
+    // Logout and clear auth state
+    async logout({ commit }) {
+      await supabase.auth.signOut();
+      commit("clearAuth");
+    },
   },
-  getters: {},
+
+  getters: {
+    isLoggedIn: (state) => !!state.user,
+  },
 });

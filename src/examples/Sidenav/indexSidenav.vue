@@ -1,53 +1,22 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { supabase } from '@/supabaseClient'
-import { computed } from "vue";
-import { useStore } from "vuex";
-import SidenavList from "./SidenavList.vue";
-import tess from "@/assets/img/tess.jpg";
+import { computed } from 'vue'
+import { useStore } from 'vuex'
+import SidenavList from './SidenavList.vue'
+import tess from '@/assets/img/tess.jpg'
 
-const user = ref(null)
-const error = ref(null)
-const store = useStore();
-const isRTL = computed(() => store.state.isRTL);
-const layout = computed(() => store.state.layout);
-const sidebarType = computed(() => store.state.sidebarType);
+const store = useStore()
 
-let userExists = ref(false)
+const isRTL = computed(() => store.state.isRTL)
+const layout = computed(() => store.state.layout)
+const sidebarType = computed(() => store.state.sidebarType)
 
-onMounted(async () => {
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+// Pull from Vuex store
+const member = computed(() => store.state.member)
 
-  if (sessionError || !sessionData.session) {
-    userExists.value = false
-  }
-
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-
-  if (userError) {
-    error.value = userError.message
-  } else {
-    user.value = userData.user
-
-    if (user.value?.id) {
-      const { data: memberData, error: memberError } = await supabase
-        .from('members')
-        .select('*')
-        .eq('member_id', user.value.id)
-
-      if (memberError) {
-        error.value = memberError.message
-      } else {
-        if (memberData.length > 0) {
-          userExists.value = true
-        } else {
-          userExists.value = false
-        }
-      }
-    }
-  }
-})
+// Determine whether the user has a member profile
+const userExists = computed(() => !!member.value)
 </script>
+
 <template>
 
   <div v-show="layout === 'default'" class="min-height-300 position-absolute w-100" />

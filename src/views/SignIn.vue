@@ -1,30 +1,45 @@
 <script setup>
-
-import { ref, onMounted, onBeforeMount, onBeforeUnmount} from 'vue'
+import { ref, onMounted, onBeforeMount, onBeforeUnmount } from 'vue'
 import { supabase } from '@/supabaseClient'
 import { useRouter } from 'vue-router'
-import ArgonInput from "@/components/ArgonInput.vue";
-import ArgonSwitch from "@/components/ArgonSwitch.vue";
-import ArgonButton from "@/components/ArgonButton.vue";
-import { useStore } from "vuex";
-const store = useStore();
+import { useStore } from "vuex"
 
+import ArgonInput from "@/components/ArgonInput.vue"
+import ArgonSwitch from "@/components/ArgonSwitch.vue"
+import ArgonButton from "@/components/ArgonButton.vue"
+
+const store = useStore()
 const router = useRouter()
 
-// Form state
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 
+// Hide navbar/footer/etc while on auth page
 onBeforeMount(() => {
-  store.state.showNavbar = false;
-});
+  store.state.layout = 'auth'
+  store.state.showNavbar = false
+})
 onBeforeUnmount(() => {
-  store.state.showNavbar = true;
+  store.state.layout = 'default'
+  store.state.showNavbar = true
+})
 
-});
+onMounted(async () => {
+  // Check if store already has user
+  if (store.state.user) {
+    router.push('/dashboard-default')
+    return
+  }
 
-// Login function
+  // Otherwise check Supabase
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+  if (!sessionError && sessionData.session) {
+    await store.dispatch('fetchUser') // populate store.user + store.member
+    router.push('/dashboard-default')
+  }
+})
+
 const signIn = async () => {
   errorMessage.value = ''
 
@@ -35,22 +50,30 @@ const signIn = async () => {
 
   if (error) {
     errorMessage.value = error.message
-  } else {
-    console.log('Login successful:', data.user)
-    await router.push('/dashboard-default')
-  }
-}
-
-onMounted(async () => {
-  const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
-
-  if (!sessionError && sessionData.session) {
-    router.push('/dashboard-default')
     return
   }
-})
+
+  const user = data.user
+
+  // Commit user to store
+  store.commit('setUser', user)
+
+  // Fetch member data
+  const { data: memberData, error: memberError } = await supabase
+    .from('members')
+    .select('*, themes(*)')
+    .eq('member_id', user.id)
+    .single()
+
+  if (!memberError && memberData) {
+    store.commit('setMember', memberData)
+  }
+
+  await router.push('/dashboard-default')
+}
 
 </script>
+
 <template>
   <main class="mt-0 main-content">
     <section>
@@ -73,13 +96,6 @@ onMounted(async () => {
                         name="password" size="lg" />
                     </div>
                     <argon-switch id="rememberMe" name="remember-me">Remember me</argon-switch>
-                    <div class="pt-3">
-                      <p>
-                        Don't have an account?
-                        <router-link to="/signup" class="text-primary fw-bold">Sign Up!</router-link>
-                      </p>
-
-                    </div>
 
                     <div class="text-center">
                       <argon-button class="custom-login-btn mt-4" fullWidth size="lg">Sign in</argon-button>
@@ -87,6 +103,13 @@ onMounted(async () => {
 
                     <div v-if="errorMessage" class="text-danger mt-2 text-sm">
                       {{ errorMessage }}
+                    </div>
+
+                    <div class="pt-3">
+                      <p>
+                        Don't have an account?
+                        <router-link to="/signup" class="text-primary fw-bold">Sign Up!</router-link>
+                      </p>
                     </div>
 
                   </form>
