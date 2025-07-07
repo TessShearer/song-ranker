@@ -52,7 +52,7 @@ const handleArtistAdded = () => {
 <template>
   <div>
     <div class="mb-3" v-if="isOwner">
-      <button class="btn btn-large font-large" @click="showArtistModal = true" :style="{
+      <button class="btn btn-large font-large ombre-overlay" @click="showArtistModal = true" :style="{
       backgroundColor: theme?.dark_two || '#198754',
       color: theme?.light_one || '#fff'
     }">
@@ -84,7 +84,7 @@ const handleArtistAdded = () => {
                 <td>{{ artist.albumCount }} Album{{ artist.albumCount !== 1 ? 's' : '' }}</td>
                 <td>{{ artist.songCount }} Song{{ artist.songCount !== 1 ? 's' : '' }}</td>
                 <td>
-                  <button class="btn" @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)" :style="{
+                  <button class="btn ombre-overlay" @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)" :style="{
       backgroundColor: theme?.light_two,
       color: theme?.dark_one
     }">

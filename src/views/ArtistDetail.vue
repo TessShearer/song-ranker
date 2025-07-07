@@ -164,7 +164,7 @@ onMounted(async () => {
 
         <!-- Add album button -->
         <div v-if="isOwner && !showAlbumInput">
-          <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+          <button class="btn ombre-overlay" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
             @click="showAlbumInput = true">
             + Add Album
           </button>
@@ -174,11 +174,11 @@ onMounted(async () => {
         <div v-else-if="isOwner" class="d-flex gap-2 mt-2 w-100 flex-wrap">
           <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
             :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }" />
-          <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+          <button class="btn ombre-overlay" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
             @click="addAlbum">
             Add
           </button>
-          <button class="btn btn-secondary" @click="showAlbumInput = false">
+          <button class="btn btn-secondary ombre-overlay" @click="showAlbumInput = false">
             Cancel
           </button>
         </div>
@@ -219,7 +219,7 @@ onMounted(async () => {
 
                   <!-- Add Song Section -->
                   <div v-if="isOwner">
-                    <button class="btn btn-outline-primary btn-sm mb-2" @click="album.addingSong = !album.addingSong">
+                    <button class="btn ombre-overlay btn-outline-primary btn-sm mb-2" @click="album.addingSong = !album.addingSong">
                       {{ album.addingSong ? 'Cancel' : '+ Add Song' }}
                     </button>
 
@@ -228,7 +228,7 @@ onMounted(async () => {
                         class="form-control form-control-sm me-2"
                         :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }"
                         @keyup.enter="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false" />
-                      <button class="btn btn-sm"
+                      <button class="btn ombre-overlay btn-sm"
                         :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
                         @click="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false">
                         Add

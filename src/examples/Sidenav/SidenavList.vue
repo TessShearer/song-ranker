@@ -46,7 +46,6 @@ onMounted(async () => {
 });
 </script>
 
-
 <template>
   <div class="collapse navbar-collapse w-auto h-auto h-100" id="sidenav-collapse-main">
     <ul class="navbar-nav">
@@ -55,7 +54,6 @@ onMounted(async () => {
           :path="member.themes?.image" :background="member.themes?.light_one" :text="member.themes?.dark_one"
           :class="getRoute() === `members/${member.member_id}/tables` ? 'active' : ''" />
       </li>
-
 
       <li class="nav-item">
         <sidenav-item to="/profile" color="white" :path="'/themes/settings.jpg'" :text="'black'"

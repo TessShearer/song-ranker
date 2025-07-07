@@ -122,7 +122,7 @@ const submitChanges = async () => {
           </div>
 
           <div class="text-end">
-            <button class="btn"
+            <button class="btn ombre-overlay"
               :style="{ backgroundColor: member?.themes?.dark_two || '#f5f5f5', color: member?.themes?.light_one }"
               @click="submitChanges">Update Profile</button>
           </div>

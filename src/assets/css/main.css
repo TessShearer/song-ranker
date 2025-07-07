@@ -27,8 +27,34 @@ background-three {
     font-weight: bold;
 }
 
-/* In your main CSS */
 body.theme-dark {
     background-color: #1a1a1a;
+  }
+
+.ombre-overlay {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .ombre-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.15) 0%,
+        rgba(255, 255, 255, 0.05) 30%,
+        transparent 50%,
+        rgba(0, 0, 0, 0.05) 70%,
+        rgba(0, 0, 0, 0.15) 100%
+      );
+  }
+  
+  /* Optional: Add hover effect */
+  .ombre-overlay:hover::before {
+    opacity: 0.7;
   }
   
