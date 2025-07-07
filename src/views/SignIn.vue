@@ -1,6 +1,6 @@
 <script setup>
 
-import { ref, onMounted  } from 'vue'
+import { ref, onMounted } from 'vue'
 import { supabase } from '@/supabaseClient'
 import { useRouter } from 'vue-router'
 import ArgonInput from "@/components/ArgonInput.vue";
@@ -19,9 +19,9 @@ const signIn = async () => {
   errorMessage.value = ''
 
   const { data, error } = await supabase.auth.signInWithPassword({
-  email: email.value,
-  password: password.value
-})
+    email: email.value,
+    password: password.value
+  })
 
   if (error) {
     errorMessage.value = error.message
@@ -56,18 +56,23 @@ onMounted(async () => {
                 <div class="card-body">
                   <form role="form" @submit.prevent="signIn">
                     <div class="mb-3">
-                      <argon-input v-model="email" id="email" type="email" placeholder="email" name="email"
-                        size="lg" />
+                      <argon-input v-model="email" id="email" type="email" placeholder="email" name="email" size="lg" />
                     </div>
                     <div class="mb-3">
                       <argon-input v-model="password" id="password" type="password" placeholder="Password"
                         name="password" size="lg" />
                     </div>
                     <argon-switch id="rememberMe" name="remember-me">Remember me</argon-switch>
+                    <div class="pt-3">
+                      <p>
+                        Don't have an account?
+                        <router-link to="/signup" class="text-primary fw-bold">Sign Up!</router-link>
+                      </p>
+
+                    </div>
 
                     <div class="text-center">
-                      <argon-button class="mt-4" variant="gradient" color="success" fullWidth size="lg"
-                        >Sign in</argon-button>
+                      <argon-button class="custom-login-btn mt-4" fullWidth size="lg">Sign in</argon-button>
                     </div>
 
                     <div v-if="errorMessage" class="text-danger mt-2 text-sm">
@@ -84,3 +89,15 @@ onMounted(async () => {
     </section>
   </main>
 </template>
+
+<style scoped>
+.custom-login-btn {
+  background: linear-gradient(135deg, #aa28c1, #6834c9);
+  color: white;
+  border: none;
+}
+
+.custom-login-btn:hover {
+  opacity: 0.95;
+}
+</style>

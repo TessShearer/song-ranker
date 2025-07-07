@@ -61,15 +61,7 @@ const signUp = async () => {
     </div>
   </div>
   <main class="main-content mt-0">
-    <div class="page-header align-items-start min-vh-50 pt-5 pb-11 m-3 border-radius-lg" style="
-        background-image: url(&quot;https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/signup-cover.jpg&quot;);
-        background-position: top;
-      ">
-
-    </div>
     <div class="container">
-      <div class="row mt-lg-n10 mt-md-n11 mt-n10 justify-content-center">
-        <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
           <div class="card z-index-0">
             <div class="card-body">
               <form role="form">
@@ -87,14 +79,24 @@ const signUp = async () => {
 
                 <p class="text-sm mt-3 mb-0">
                   Already have an account?
-                  <a href="javascript:;" class="text-dark font-weight-bolder">Sign in</a>
+                  <router-link to="/signin" class="text-primary fw-bold">Sign In!</router-link>
                 </p>
               </form>
             </div>
           </div>
         </div>
-      </div>
-    </div>
   </main>
   <app-footer />
 </template>
+
+<style scoped>
+.custom-login-btn {
+  background: linear-gradient(135deg, #aa28c1, #6834c9);
+  color: white;
+  border: none;
+}
+
+.custom-login-btn:hover {
+  opacity: 0.95;
+}
+</style>
