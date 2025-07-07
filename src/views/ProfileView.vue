@@ -9,7 +9,6 @@ const store = useStore();
 // Use existing Vuex state
 const user = computed(() => store.state.user);
 const member = computed(() => store.state.member);
-const theme = computed(() => store.state.theme);
 
 const themes = ref([]);
 const selectedThemeId = ref(null);
