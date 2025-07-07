@@ -1,18 +1,23 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { supabase } from '@/supabaseClient';
 import ArgonInput from '@/components/ArgonInput.vue';
 
 const store = useStore();
-const user = ref(null);
-const member = ref(null);
+
+// Use existing Vuex state
+const user = computed(() => store.state.user);
+const member = computed(() => store.state.member);
+const theme = computed(() => store.state.theme);
+
 const themes = ref([]);
 const selectedThemeId = ref(null);
 const updatedName = ref('');
 const success = ref('');
 const error = ref('');
 
+// Setup layout behavior
 onMounted(async () => {
   store.state.isAbsolute = true;
   store.state.imageLayout = 'profile-overview';
@@ -20,55 +25,49 @@ onMounted(async () => {
   store.state.hideConfigButton = true;
   document.body.classList.add('profile-overview');
 
-  // Get user and member
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) {
-    error.value = 'Failed to retrieve user.';
-    return;
-  }
-  user.value = userData.user;
-
-  const { data: memberData, error: memberError } = await supabase
-    .from('members')
-    .select('*, themes(*)')
-    .eq('member_id', user.value.id)
-    .single();
-
-  if (memberError) {
-    error.value = memberError.message;
-    return;
+  // Initialize local form values
+  if (member.value) {
+    updatedName.value = member.value.member_name;
+    selectedThemeId.value = member.value.theme_id;
   }
 
-  member.value = memberData;
-  updatedName.value = memberData.member_name;
-  selectedThemeId.value = memberData.theme_id;
-
+  // Get available themes
   const { data: themesData, error: themesError } = await supabase.from('themes').select('*');
   if (!themesError) {
     themes.value = themesData;
   }
 });
 
+// Submit and update member record + Vuex store
 const submitChanges = async () => {
   error.value = '';
   success.value = '';
+
   if (!updatedName.value.trim() || !selectedThemeId.value) {
     error.value = 'Username and theme are required.';
     return;
   }
-  const { error: updateError } = await supabase
+
+  const { error: updateError, data: updatedData } = await supabase
     .from('members')
-    .update({ member_name: updatedName.value, theme_id: selectedThemeId.value })
-    .eq('member_id', user.value.id);
+    .update({
+      member_name: updatedName.value,
+      theme_id: selectedThemeId.value,
+    })
+    .eq('member_id', user.value.id)
+    .select('*, themes(*)') // Fetch updated member with theme
+    .single();
 
   if (updateError) {
     error.value = updateError.message;
   } else {
+    // Update Vuex store
+    store.commit('setMember', updatedData);
     success.value = 'Profile updated!';
-    window.location.reload();
   }
 };
 </script>
+
 
 <template>
   <main>
@@ -83,7 +82,7 @@ const submitChanges = async () => {
       }">
       </div>
 
-      <div class="card shadow-lg mt-n6" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5'}">
+      <div class="card shadow-lg mt-n6" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5' }">
         <div class="card-body p-3">
           <div class="h-100 px-4">
             <h5 class="mb-1">{{ member?.member_name || '...' }}</h5>

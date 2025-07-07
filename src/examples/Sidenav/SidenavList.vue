@@ -1,19 +1,49 @@
 <script setup>
-import { computed } from "vue"
+import { computed, onMounted, ref } from "vue"
 import { useRoute } from "vue-router"
 import { useStore } from "vuex"
 import SidenavItem from "./SidenavItem.vue"
+import { supabase } from "@/supabaseClient";
 
 const store = useStore()
 
 const isRTL = computed(() => store.state.isRTL)
-const members = computed(() => store.state.members || [])
+const members = ref([]);
+const error = ref(null);
+const user = ref(null);
 
 const getRoute = () => {
   const route = useRoute()
   const routeArr = route.path.split("/")
   return routeArr[1] + (routeArr[2] ? `/${routeArr[2]}` : "")
 }
+
+onMounted(async () => {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) {
+    error.value = "Could not retrieve user.";
+    return;
+  }
+  user.value = userData.user;
+
+  const { data: memberData, error: memberError } = await supabase
+    .from("members")
+    .select(`
+    *,
+    themes (
+      image,
+      light_one,
+      dark_one
+    )
+  `)
+
+  if (memberError) {
+    error.value = memberError.message;
+  } else {
+    members.value = memberData;
+  }
+})
+
 </script>
 
 

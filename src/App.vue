@@ -13,15 +13,16 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 -->
 <script setup>
-import { computed } from "vue";
+import { computed, watch, onMounted } from "vue";
 import { useStore } from "vuex";
 import Sidenav from "./examples/Sidenav/indexSidenav.vue";
 import Navbar from "@/examples/Navbars/NavbarNavbar.vue";
 import AppFooter from "@/examples/FooterExample.vue";
 import { supabase } from '@/supabaseClient';
-import { onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 
 const store = useStore();
+
 const isNavFixed = computed(() => store.state.isNavFixed);
 const darkMode = computed(() => store.state.darkMode);
 const isAbsolute = computed(() => store.state.isAbsolute);
@@ -29,9 +30,9 @@ const showSidenav = computed(() => store.state.showSidenav);
 const layout = computed(() => store.state.layout);
 const showNavbar = computed(() => store.state.showNavbar);
 const showFooter = computed(() => store.state.showFooter);
-import { useRoute } from 'vue-router'
+const theme = computed(() => store.state.theme);
 
-const route = useRoute()
+const route = useRoute();
 
 const navClasses = computed(() => {
   return {
@@ -44,21 +45,27 @@ const navClasses = computed(() => {
   };
 });
 
+// On app mount, check if user is logged in but store is empty, then fetch user data
 onMounted(async () => {
-  const { data: userData } = await supabase.auth.getUser()
-  if (!userData?.user) return
+  if (!store.state.user) {
+    const { data: { session } } = await supabase.auth.getSession();
 
-  const { data: memberData } = await supabase
-    .from('members')
-    .select('*, themes(*)')
-    .eq('member_id', userData.user.id)
-    .single()
-
-  if (memberData?.themes?.dark_one) {
-    document.body.style.backgroundColor = memberData.themes.dark_one
+    if (session) {
+      await store.dispatch('fetchUser');
+    }
   }
-})
+});
+
+// Watch for theme changes in the store and update body background color accordingly
+watch(theme, (newTheme) => {
+  if (newTheme?.dark_one) {
+    document.body.style.backgroundColor = newTheme.dark_one;
+  } else {
+    document.body.style.backgroundColor = ''; // fallback to default
+  }
+}, { immediate: true });
 </script>
+
 <template>
   <div v-show="layout === 'landing'" class="landing-bg h-100 bg-gradient-primary position-fixed w-100"></div>
 
