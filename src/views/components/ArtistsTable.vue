@@ -1,51 +1,40 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { supabase } from '@/supabaseClient'
+import { ref, onMounted, watch } from 'vue'
 import ArtistAddCard from '../../examples/Cards/ArtistAddCard.vue'
+import { supabase } from "@/supabaseClient";
+
+const props = defineProps({
+  memberMusicId: String,
+  theme: Object,
+  isOwner: Boolean
+})
 
 const artists = ref([])
 const error = ref(null)
 const showArtistModal = ref(false)
-const memberMusicId = ref(null)
-const theme = ref(null)
 
-onMounted(async () => {
-  const { data: userData, error: userError } = await supabase.auth.getUser()
-  if (userError || !userData.user) {
-    error.value = 'User not found.'
-    return
-  }
+onMounted(() => {
+  if (props.memberMusicId) fetchArtists()
+})
 
-  const { data: memberData, error: memberError } = await supabase
-    .from('members')
-    .select('music_id, themes(*)')
-    .eq('member_id', userData.user.id)
-    .single()
-
-  if (memberError || !memberData) {
-    error.value = 'Member not found.'
-    return
-  }
-
-  memberMusicId.value = memberData.music_id
-  theme.value = memberData.themes
-  fetchArtists()
+watch(() => props.memberMusicId, (newId) => {
+  if (newId) fetchArtists()
 })
 
 const fetchArtists = async () => {
-  const { data: artistData, error: artistError } = await supabase
+  const { data, error: artistError } = await supabase
     .from('artists')
     .select(`
       *,
       albums:albums(count),
       songs:songs(count)
     `)
-    .eq('member_id', memberMusicId.value)
+    .eq('member_id', props.memberMusicId)
 
   if (artistError) {
     error.value = artistError.message
   } else {
-    artists.value = artistData.map(artist => ({
+    artists.value = data.map(artist => ({
       id: artist.id,
       name: artist.name,
       albumCount: artist.albums[0]?.count || 0,
@@ -62,8 +51,7 @@ const handleArtistAdded = () => {
 
 <template>
   <div>
-
-    <div class="mb-3">
+    <div class="mb-3" v-if="isOwner">
       <button class="btn btn-large font-large" @click="showArtistModal = true" :style="{
       backgroundColor: theme?.dark_two || '#198754',
       color: theme?.light_one || '#fff'
@@ -84,17 +72,25 @@ const handleArtistAdded = () => {
                 <th :style="{ color: theme?.dark_one || '#000' }">Artist</th>
                 <th :style="{ color: theme?.dark_one || '#000' }">Albums</th>
                 <th :style="{ color: theme?.dark_one || '#000' }">Songs</th>
+                <th>Rankings</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="artist in artists" :key="artist.id" @click="$router.push(`/artists/${artist.id}`)"
-                style="cursor: pointer;" class="table-row-hover" :style="{
-      backgroundColor: isHovering ? theme?.dark_one + '22' : theme?.light_one,
+              <tr v-for="artist in artists" :key="artist.id" style="cursor: pointer;" class="table-row-hover" :style="{
+      backgroundColor: theme?.light_one,
       color: theme?.dark_one
     }">
                 <td>{{ artist.name }}</td>
                 <td>{{ artist.albumCount }} Album{{ artist.albumCount !== 1 ? 's' : '' }}</td>
                 <td>{{ artist.songCount }} Song{{ artist.songCount !== 1 ? 's' : '' }}</td>
+                <td>
+                  <button class="btn" @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)" :style="{
+      backgroundColor: theme?.light_two,
+      color: theme?.dark_one
+    }">
+                    {{ isOwner ? 'Rank' : 'View Rankings' }}
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>

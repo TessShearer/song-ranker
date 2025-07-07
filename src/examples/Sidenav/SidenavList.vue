@@ -51,14 +51,15 @@ onMounted(async () => {
   <div class="collapse navbar-collapse w-auto h-auto h-100" id="sidenav-collapse-main">
     <ul class="navbar-nav">
       <li class="nav-item" v-for="member in members" :key="member.member_id">
-        <sidenav-item to="/tables" :navText="member.member_name" :path="member.themes?.image" 
-          :background="member.themes?.light_one" :text="member.themes?.dark_one" :class="getRoute() === `members/${member.member_id}` ? 'active' : ''">
-        </sidenav-item>
+        <sidenav-item :to="`/members/${member.member_id}/tables`" :navText="member.member_name"
+          :path="member.themes?.image" :background="member.themes?.light_one" :text="member.themes?.dark_one"
+          :class="getRoute() === `members/${member.member_id}/tables` ? 'active' : ''" />
       </li>
 
+
       <li class="nav-item">
-        <sidenav-item to="/profile" color="white" :path="'/themes/settings.jpg'" :text="'black'" :class="getRoute() === 'profile' ? 'active' : ''"
-          :navText="isRTL ? 'حساب تعريفي' : 'Edit Settings'">
+        <sidenav-item to="/profile" color="white" :path="'/themes/settings.jpg'" :text="'black'"
+          :class="getRoute() === 'profile' ? 'active' : ''" :navText="isRTL ? 'حساب تعريفي' : 'Edit Settings'">
           <template #icon>
             <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
           </template>
