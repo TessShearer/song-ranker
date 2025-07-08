@@ -13,7 +13,11 @@ const artistId = route.params.artistId
 const user = computed(() => store.state.user)
 const signedInMember = computed(() => store.state.member)
 const isLoggedIn = computed(() => !!user.value)
-const isOwner = computed(() => isLoggedIn.value && signedInMember.value.music_id == memberId)
+const isOwner = computed(() =>
+  isLoggedIn.value &&
+  signedInMember.value &&
+  signedInMember.value.music_id === memberId
+)
 
 const artist = ref(null)
 const member = ref(null)
@@ -97,7 +101,7 @@ const addSong = async (albumId, songName) => {
   const maxRank = Math.max(...existingRanks, 0)
 
   const { error: insertError } = await supabase.from('songs').insert([{
-    name: songName,
+    title: songName,
     album_id: albumId,
     artist_id: artistId,
     member_id: memberId,
@@ -112,6 +116,28 @@ const addSong = async (albumId, songName) => {
 }
 
 onMounted(async () => {
+  // Restore user and member if not already in store
+  if (!user.value) {
+    const { data: userData } = await supabase.auth.getUser()
+    if (userData?.user) {
+      store.commit('setUser', userData.user)
+    }
+  }
+
+  if (!signedInMember.value) {
+    const { data: currentMemberData, error: memberError } = await supabase
+      .from('members')
+      .select('*')
+      .eq('member_id', user.value?.id)
+      .single()
+
+    if (currentMemberData) {
+      store.commit('setMember', currentMemberData)
+    } else if (memberError) {
+      error.value = memberError.message
+    }
+  }
+
   // Get artist
   const { data: artistData, error: artistError } = await supabase
     .from('artists')
@@ -155,7 +181,8 @@ onMounted(async () => {
 
         <!-- Add album button -->
         <div v-if="isOwner && !showAlbumInput">
-          <button class="btn ombre-overlay" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+          <button class="btn ombre-overlay"
+            :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
             @click="showAlbumInput = true">
             + Add Album
           </button>
@@ -165,8 +192,8 @@ onMounted(async () => {
         <div v-else-if="isOwner" class="d-flex gap-2 mt-2 w-100 flex-wrap">
           <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
             :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }" />
-          <button class="btn ombre-overlay" :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
-            @click="addAlbum">
+          <button class="btn ombre-overlay"
+            :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }" @click="addAlbum">
             Add
           </button>
           <button class="btn btn-secondary ombre-overlay" @click="showAlbumInput = false">
@@ -176,71 +203,19 @@ onMounted(async () => {
       </div>
     </div>
 
-      <div class="row">
-        <!-- Albums and Songs -->
-        <div class="col-lg-8">
-          <div v-if="albums.length > 0" class="row">
-            <div v-for="album in albums" :key="album.id" class="col-md-6 mb-4">
-              <div class="card shadow"
-                :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-                <div class="card-body">
-                  <h5 class="card-title">{{ album.title }}</h5>
-
-                  <!-- Songs List (Draggable if owner, plain list if not) -->
-                  <draggable v-if="isOwner" v-model="album.songs" item-key="id" :group="{ name: 'songs-' + album.id }"
-                    @end="updateSongOrder(album)" tag="ul" class="list-group list-group-flush mb-3">
-                    <template #item="{ element, index }">
-                      <li class="list-group-item d-flex justify-content-between align-items-center"
-                        :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-                        <span>#{{ index + 1 }} - {{ element.title }}</span>
-                        <i class="fas fa-grip-lines text-muted"></i>
-                      </li>
-                    </template>
-                  </draggable>
-
-                  <ul v-else class="list-group list-group-flush mb-3">
-                    <li v-for="(song, index) in album.songs" :key="song.id"
-                      class="list-group-item d-flex justify-content-between align-items-center"
-                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-                      <span>#{{ index + 1 }} - {{ song.title }}</span>
-                    </li>
-                  </ul>
-
-                  <div v-if="album.songs.length === 0" class="text-muted mb-2">No songs yet</div>
-
-                  <!-- Add Song Section -->
-                  <div v-if="isOwner">
-                    <button class="btn ombre-overlay btn-outline-primary btn-sm mb-2" @click="album.addingSong = !album.addingSong">
-                      {{ album.addingSong ? 'Cancel' : '+ Add Song' }}
-                    </button>
-
-                    <div v-if="album.addingSong" class="d-flex">
-                      <input v-model="album.newSongName" placeholder="New song title"
-                        class="form-control form-control-sm me-2"
-                        :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }"
-                        @keyup.enter="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false" />
-                      <button class="btn ombre-overlay btn-sm"
-                        :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
-                        @click="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false">
-                        Add
-                      </button>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-          <div class="col-lg-4">
-            <div class="card" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+    <div class="row">
+      <!-- Albums and Songs -->
+      <div class="col-lg-8">
+        <div v-if="albums.length > 0" class="row">
+          <div v-for="album in albums" :key="album.id" class="col-md-6 mb-4">
+            <div class="card shadow"
+              :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
               <div class="card-body">
-                <h5 class="card-title">Album Ranking</h5>
+                <h5 class="card-title">{{ album.title }}</h5>
 
-                <!-- Draggable or read-only list -->
-                <draggable v-if="isOwner" v-model="albums" item-key="id" @end="updateAlbumOrder" tag="ul"
-                  class="list-group">
+                <!-- Songs List (Draggable if owner, plain list if not) -->
+                <draggable v-if="isOwner" v-model="album.songs" item-key="id" :group="{ name: 'songs-' + album.id }"
+                  @end="updateSongOrder(album)" tag="ul" class="list-group list-group-flush mb-3">
                   <template #item="{ element, index }">
                     <li class="list-group-item d-flex justify-content-between align-items-center"
                       :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
@@ -250,24 +225,77 @@ onMounted(async () => {
                   </template>
                 </draggable>
 
-                <ul v-else class="list-group">
-                  <li v-for="(album, index) in albums" :key="album.id"
+                <ul v-else class="list-group list-group-flush mb-3">
+                  <li v-for="(song, index) in album.songs" :key="song.id"
                     class="list-group-item d-flex justify-content-between align-items-center"
                     :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-                    <span>#{{ index + 1 }} - {{ album.title }}</span>
+                    <span>#{{ index + 1 }} - {{ song.title }}</span>
                   </li>
                 </ul>
+
+                <div v-if="album.songs.length === 0" class="text-muted mb-2">No songs yet</div>
+
+                <!-- Add Song Section -->
+                <div v-if="isOwner">
+                  <button class="btn ombre-overlay btn-outline-primary btn-sm mb-2"
+                    @click="album.addingSong = !album.addingSong">
+                    {{ album.addingSong ? 'Cancel' : '+ Add Song' }}
+                  </button>
+
+                  <div v-if="album.addingSong" class="d-flex">
+                    <input v-model="album.newSongName" placeholder="New song title"
+                      class="form-control form-control-sm me-2"
+                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }"
+                      @keyup.enter="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false" />
+                    <button class="btn ombre-overlay btn-sm"
+                      :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+                      @click="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false">
+                      Add
+                    </button>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
+        </div>
       </div>
 
-        <p v-if="error" class="text-danger mt-3">{{ error }}</p>
+      <div class="col-lg-4">
+        <div class="card" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+          <div class="card-body">
+            <h5 class="card-title">Album Ranking</h5>
+
+            <!-- Draggable or read-only list -->
+            <draggable v-if="isOwner" v-model="albums" item-key="id" @end="updateAlbumOrder" tag="ul"
+              class="list-group">
+              <template #item="{ element, index }">
+                <li class="list-group-item d-flex justify-content-between align-items-center"
+                  :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+                  <span>#{{ index + 1 }} - {{ element.title }}</span>
+                  <i class="fas fa-grip-lines text-muted"></i>
+                </li>
+              </template>
+            </draggable>
+
+            <ul v-else class="list-group">
+              <li v-for="(album, index) in albums" :key="album.id"
+                class="list-group-item d-flex justify-content-between align-items-center"
+                :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+                <span>#{{ index + 1 }} - {{ album.title }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p v-if="error" class="text-danger mt-3">{{ error }}</p>
   </div>
 </template>
 
-    <style scoped>
-    .list-group-item {
-      cursor: grab;
-    }
-  </style>
+<style scoped>
+.list-group-item {
+  cursor: grab;
+}
+</style>
