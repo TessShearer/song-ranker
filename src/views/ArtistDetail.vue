@@ -4,6 +4,7 @@ import { useStore } from 'vuex'
 import { useRoute } from 'vue-router'
 import { supabase } from '@/supabaseClient'
 import draggable from 'vuedraggable'
+import ArtistRankingCard from './components/ArtistRankingCard.vue'
 
 const store = useStore()
 const route = useRoute()
@@ -16,7 +17,7 @@ const isLoggedIn = computed(() => !!user.value)
 const isOwner = computed(() =>
   isLoggedIn.value &&
   signedInMember.value &&
-  signedInMember.value.music_id === memberId
+  signedInMember.value.music_id == memberId
 )
 
 const artist = ref(null)
@@ -203,10 +204,46 @@ onMounted(async () => {
       </div>
     </div>
 
+    <!-- Album Ranking on Top -->
+    <div class="row mb-4">
+
+      <div class="col-12">
+        <artist-ranking-card :albums="albums" :isOwner="isOwner" />
+      </div>
+
+      <div class="col-12">
+        <div class="card" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+          <div class="card-body">
+            <h5 class="card-title">Album Ranking</h5>
+
+            <!-- Draggable or read-only list -->
+            <draggable v-if="isOwner" v-model="albums" item-key="id" @end="updateAlbumOrder" tag="ul"
+              class="list-group">
+              <template #item="{ element, index }">
+                <li class="list-group-item d-flex justify-content-between align-items-center"
+                  :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+                  <span>#{{ index + 1 }} - {{ element.title }}</span>
+                  <i class="fas fa-grip-lines text-muted"></i>
+                </li>
+              </template>
+            </draggable>
+
+            <ul v-else class="list-group">
+              <li v-for="(album, index) in albums" :key="album.id"
+                class="list-group-item d-flex justify-content-between align-items-center"
+                :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+                <span>#{{ index + 1 }} - {{ album.title }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Album Cards Grid -->
     <div class="row">
-      <!-- Albums and Songs -->
-      <div class="col-lg-8">
-        <div v-if="albums.length > 0" class="row">
+      <div v-if="albums.length > 0" class="col-12">
+        <div class="row">
           <div v-for="album in albums" :key="album.id" class="col-md-6 mb-4">
             <div class="card shadow"
               :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
@@ -260,35 +297,8 @@ onMounted(async () => {
           </div>
         </div>
       </div>
-
-      <div class="col-lg-4">
-        <div class="card" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-          <div class="card-body">
-            <h5 class="card-title">Album Ranking</h5>
-
-            <!-- Draggable or read-only list -->
-            <draggable v-if="isOwner" v-model="albums" item-key="id" @end="updateAlbumOrder" tag="ul"
-              class="list-group">
-              <template #item="{ element, index }">
-                <li class="list-group-item d-flex justify-content-between align-items-center"
-                  :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-                  <span>#{{ index + 1 }} - {{ element.title }}</span>
-                  <i class="fas fa-grip-lines text-muted"></i>
-                </li>
-              </template>
-            </draggable>
-
-            <ul v-else class="list-group">
-              <li v-for="(album, index) in albums" :key="album.id"
-                class="list-group-item d-flex justify-content-between align-items-center"
-                :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-                <span>#{{ index + 1 }} - {{ album.title }}</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
     </div>
+
 
     <p v-if="error" class="text-danger mt-3">{{ error }}</p>
   </div>
