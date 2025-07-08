@@ -1,12 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useStore } from 'vuex';
 import { supabase } from '@/supabaseClient';
 import ArgonInput from '@/components/ArgonInput.vue';
 
 const store = useStore();
 
-// Use existing Vuex state
 const user = computed(() => store.state.user);
 const member = computed(() => store.state.member);
 
@@ -16,7 +15,14 @@ const updatedName = ref('');
 const success = ref('');
 const error = ref('');
 
-// Setup layout behavior
+// Wait for member to load, then populate fields
+watch(member, (newMember) => {
+  if (newMember) {
+    updatedName.value = newMember.member_name;
+    selectedThemeId.value = newMember.theme_id;
+  }
+}, { immediate: true });
+
 onMounted(async () => {
   store.state.isAbsolute = true;
   store.state.imageLayout = 'profile-overview';
@@ -24,20 +30,31 @@ onMounted(async () => {
   store.state.hideConfigButton = true;
   document.body.classList.add('profile-overview');
 
-  // Initialize local form values
-  if (member.value) {
-    updatedName.value = member.value.member_name;
-    selectedThemeId.value = member.value.theme_id;
+  // If store data is lost after refresh, restore it
+  if (!member.value || !user.value) {
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData?.user) {
+      store.commit('setUser', userData.user);
+
+      const { data: memberData } = await supabase
+        .from('members')
+        .select('*, themes(*)')
+        .eq('member_id', userData.user.id)
+        .single();
+
+      if (memberData) {
+        store.commit('setMember', memberData);
+      }
+    }
   }
 
-  // Get available themes
+  // Load all themes for dropdown
   const { data: themesData, error: themesError } = await supabase.from('themes').select('*');
   if (!themesError) {
     themes.value = themesData;
   }
 });
 
-// Submit and update member record + Vuex store
 const submitChanges = async () => {
   error.value = '';
   success.value = '';
@@ -54,13 +71,12 @@ const submitChanges = async () => {
       theme_id: selectedThemeId.value,
     })
     .eq('member_id', user.value.id)
-    .select('*, themes(*)') // Fetch updated member with theme
+    .select('*, themes(*)')
     .single();
 
   if (updateError) {
     error.value = updateError.message;
   } else {
-    // Update Vuex store
     store.commit('setMember', updatedData);
     success.value = 'Profile updated!';
   }
@@ -68,20 +84,22 @@ const submitChanges = async () => {
 </script>
 
 
+
 <template>
   <main>
     <div class="container-fluid">
-      <div class="page-header min-height-250 mt-4" :style="{
+      <div class="page-header min-height-250" :style="{
         backgroundImage: member?.themes?.header ? `url(${member.themes.header})` : '',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         marginRight: '-24px',
         marginLeft: '-34%',
+        marginTop: '-5%',
         position: 'relative',
       }">
       </div>
 
-      <div class="card shadow-lg mt-n6" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5' }">
+      <div class="card shadow-lg mt-n8" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5' }">
         <div class="card-body p-3">
           <div class="h-100 px-4">
             <h5 class="mb-1">{{ member?.member_name || '...' }}</h5>

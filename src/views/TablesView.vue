@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import { supabase } from '@/supabaseClient'
@@ -8,29 +8,52 @@ import ArtistsTable from './components/ArtistsTable.vue'
 const route = useRoute()
 const store = useStore()
 
-const musicId = route.params.memberId
 const loggedInUser = computed(() => store.state.user)
+const musicId = computed(() => route.params.memberId)
 
 const member = ref(null)
 const isOwner = ref(false)
 
-onMounted(async () => {
-  // Don't fetch unless we know the user is logged in
-  if (!loggedInUser.value?.id) return
-
-  // Fetch member data for the viewed profile
-  const { data: memberData, error: memberError } = await supabase
+const loadMember = async (userId) => {
+  const { data: memberData, error } = await supabase
     .from('members')
     .select('*, themes(*)')
-    .eq('music_id', musicId)
+    .eq('music_id', musicId.value)
     .single()
 
-  if (!memberError && memberData) {
+  if (!error && memberData) {
     member.value = memberData
-    isOwner.value = loggedInUser.value.id === memberData.member_id
+    isOwner.value = userId === memberData.member_id
+  }
+}
+
+// Watch for user becoming available after a refresh
+watch(loggedInUser, async (user) => {
+  if (user?.id) {
+    await loadMember(user.id)
+  }
+}, { immediate: true })
+
+// Watch for route changing
+watch(musicId, async () => {
+  if (loggedInUser.value?.id) {
+    await loadMember(loggedInUser.value.id)
+  }
+})
+
+// Optional fallback if store.user is null after reload
+onMounted(async () => {
+  if (!loggedInUser.value) {
+    const { data: userData } = await supabase.auth.getUser()
+    if (userData?.user) {
+      store.commit('setUser', userData.user)
+      await loadMember(userData.user.id)
+    }
   }
 })
 </script>
+
+
 
 <template>
   <div class="container-fluid">
@@ -44,23 +67,19 @@ onMounted(async () => {
       position: 'relative'
     }">
       <span class="mask" :style="{
-        backgroundColor: member?.themes?.dark_one || '#000',
-        opacity: 0.6,
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0,
-      }"></span>
+      backgroundColor: member?.themes?.dark_one || '#000',
+      opacity: 0.3,
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+    }"></span>
     </div>
 
     <div class="row">
       <div class="col-12">
-        <artists-table
-          :memberMusicId="member?.music_id"
-          :theme="member?.themes"
-          :isOwner="isOwner"
-        />
+        <artists-table :memberMusicId="member?.music_id" :theme="member?.themes" :isOwner="isOwner" />
       </div>
     </div>
   </div>
