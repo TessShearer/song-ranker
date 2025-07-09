@@ -1,13 +1,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useStore } from 'vuex'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/supabaseClient'
 import draggable from 'vuedraggable'
 import ArtistRankingCard from './components/ArtistRankingCard.vue'
 
 const store = useStore()
 const route = useRoute()
+const router = useRouter()
 const memberId = route.params.memberId
 const artistId = route.params.artistId
 
@@ -40,7 +41,9 @@ const loadAlbums = async () => {
       ...album,
       newSongName: '',
       addingSong: false,
+      songs: [...(album.songs || [])].sort((a, b) => (a.album_ranking ?? 999) - (b.album_ranking ?? 999))
     }))
+
     sortAlbumsByRank()
   }
 }
@@ -168,6 +171,99 @@ onMounted(async () => {
 
   await loadAlbums()
 })
+
+const deleteArtist = async () => {
+  const confirmDelete = confirm(
+    'Are you sure you want to delete this artist? This will permanently delete all albums and songs associated with them.'
+  )
+  if (!confirmDelete) return
+
+  // First delete all songs by artist
+  const { error: songError } = await supabase
+    .from('songs')
+    .delete()
+    .eq('artist_id', artistId)
+
+  if (songError) {
+    error.value = 'Error deleting songs: ' + songError.message
+    return
+  }
+
+  // Then delete all albums by artist
+  const { error: albumError } = await supabase
+    .from('albums')
+    .delete()
+    .eq('artist_id', artistId)
+
+  if (albumError) {
+    error.value = 'Error deleting albums: ' + albumError.message
+    return
+  }
+
+  // Finally delete the artist
+  const { error: artistError } = await supabase
+    .from('artists')
+    .delete()
+    .eq('id', artistId)
+
+  if (artistError) {
+    error.value = 'Error deleting artist: ' + artistError.message
+    return
+  }
+
+  // Redirect to dashboard
+  router.push(`/dashboard-default`)
+}
+
+const deleteAlbum = async (albumId) => {
+  const confirmDelete = confirm(
+    'Are you sure you want to delete this album? This will permanently delete the album and all its songs.'
+  )
+  if (!confirmDelete) return
+
+  // Delete songs for the album
+  const { error: songError } = await supabase
+    .from('songs')
+    .delete()
+    .eq('album_id', albumId)
+
+  if (songError) {
+    error.value = 'Error deleting songs: ' + songError.message
+    return
+  }
+
+  // Delete the album
+  const { error: albumError } = await supabase
+    .from('albums')
+    .delete()
+    .eq('id', albumId)
+
+  if (albumError) {
+    error.value = 'Error deleting album: ' + albumError.message
+    return
+  }
+
+  await loadAlbums()
+}
+
+const deleteSong = async (songId) => {
+  const confirmDelete = confirm('Are you sure you want to delete this song?')
+  if (!confirmDelete) return
+
+  const { error: songError } = await supabase
+    .from('songs')
+    .delete()
+    .eq('id', songId)
+
+  if (songError) {
+    error.value = 'Error deleting song: ' + songError.message
+    return
+  }
+
+  await loadAlbums()
+}
+
+
 </script>
 
 
@@ -247,8 +343,16 @@ onMounted(async () => {
           <div v-for="album in albums" :key="album.id" class="col-md-6 mb-4">
             <div class="card shadow"
               :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-              <div class="card-body">
+              <div class="card-body position-relative">
                 <h5 class="card-title">{{ album.title }}</h5>
+
+                <!-- Delete album button (top right) -->
+                <button v-if="isOwner" @click="deleteAlbum(album.id)"
+                  class="btn btn-sm btn-outline-danger position-absolute" style="top: 10px; right: 10px;"
+                  title="Delete Album">
+                  <i class="fas fa-trash"></i>
+                </button>
+
 
                 <!-- Songs List (Draggable if owner, plain list if not) -->
                 <draggable v-if="isOwner" v-model="album.songs" item-key="id" :group="{ name: 'songs-' + album.id }"
@@ -256,10 +360,21 @@ onMounted(async () => {
                   <template #item="{ element, index }">
                     <li class="list-group-item d-flex justify-content-between align-items-center"
                       :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-                      <span>#{{ index + 1 }} - {{ element.title }}</span>
+
+                      <!-- Delete button (left side) -->
+                      <div class="d-flex align-items-center">
+                        <button v-if="isOwner" class="btn btn-sm btn-link text-danger px-1 me-2"
+                          @click="deleteSong(element.id)" title="Delete Song">
+                          <i class="fas fa-times"></i>
+                        </button>
+                        <span>#{{ index + 1 }} - {{ element.title }}</span>
+                      </div>
+
+                      <!-- Drag icon -->
                       <i class="fas fa-grip-lines text-muted"></i>
                     </li>
                   </template>
+
                 </draggable>
 
                 <ul v-else class="list-group list-group-flush mb-3">
@@ -297,6 +412,12 @@ onMounted(async () => {
           </div>
         </div>
       </div>
+    </div>
+
+    <div v-if="isOwner" class="mt-4 text-end">
+      <button class="btn btn-danger" @click="deleteArtist">
+        Delete Artist & All Data
+      </button>
     </div>
 
 

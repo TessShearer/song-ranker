@@ -6,6 +6,7 @@ import RTL from "../views/RtlView.vue";
 import Profile from "../views/ProfileView.vue";
 import Signup from "../views/SignUp.vue";
 import Signin from "../views/SignIn.vue";
+import ResetPassword from "../views/ResetPassword.vue";
 import ArtistDetail from "../views/ArtistDetail.vue";
 
 const routes = [
@@ -49,6 +50,11 @@ const routes = [
     path: "/signup",
     name: "Signup",
     component: Signup,
+  },
+  {
+    path: "/resetpassword",
+    name: "ResetPassword",
+    component: ResetPassword,
   },
   {
     path: '/artists/:memberId/:artistId',

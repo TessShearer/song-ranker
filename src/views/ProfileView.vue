@@ -81,6 +81,74 @@ const submitChanges = async () => {
     success.value = 'Profile updated!';
   }
 };
+
+const deleteUserAndData = async () => {
+  const confirmed = confirm("Are you sure? This will delete all your music data permanently.")
+
+  if (!confirmed) return
+
+  const userId = user.value?.id
+
+  // Step 1: Find the member tied to this user
+  const { data: memberData, error: memberError } = await supabase
+    .from('members')
+    .select('*')
+    .eq('member_id', userId)
+    .single()
+
+  if (memberError || !memberData) {
+    console.error('Member not found:', memberError)
+    return
+  }
+
+  const musicId = memberData.music_id
+
+  // Step 2: Find all artists for this member
+  const { data: artists } = await supabase
+    .from('artists')
+    .select('id')
+    .eq('member_id', musicId)
+
+  const artistIds = artists.map(a => a.id)
+
+  // Step 3: Find all albums for these artists
+  const { data: albums } = await supabase
+    .from('albums')
+    .select('id')
+    .in('artist_id', artistIds)
+
+  const albumIds = albums.map(a => a.id)
+
+  // Step 4: Delete songs first
+  await supabase
+    .from('songs')
+    .delete()
+    .in('album_id', albumIds)
+
+  // Step 5: Delete albums
+  await supabase
+    .from('albums')
+    .delete()
+    .in('id', albumIds)
+
+  // Step 6: Delete artists
+  await supabase
+    .from('artists')
+    .delete()
+    .in('id', artistIds)
+
+  // Step 7: Delete member
+  await supabase
+    .from('members')
+    .delete()
+    .eq('member_id', userId)
+
+  // Step 8: Delete auth user (optional and powerful)
+  await supabase.auth.admin.deleteUser(userId)
+
+  alert("All data deleted.")
+}
+
 </script>
 
 
@@ -100,10 +168,15 @@ const submitChanges = async () => {
       </div>
 
       <div class="card shadow-lg mt-n8" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5' }">
-        <div class="card-body p-3">
+        <div class="card-body p-3 d-inline-flex justify-content-between">
           <div class="h-100 px-4">
             <h5 class="mb-1">{{ member?.member_name || '...' }}</h5>
             <p class="mb-0 font-weight-bold text-sm">Customize your profile and theme</p>
+          </div>
+          <div>
+            <button class="btn btn-danger" @click="deleteUserAndData">
+              Delete My Account
+            </button>
           </div>
         </div>
       </div>
@@ -147,6 +220,7 @@ const submitChanges = async () => {
         </div>
       </div>
     </div>
+
   </main>
 </template>
 

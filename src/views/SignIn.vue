@@ -12,8 +12,10 @@ const store = useStore()
 const router = useRouter()
 
 const email = ref('')
+const premail = ref('')
 const password = ref('')
 const errorMessage = ref('')
+const passwordResetRequest = ref(false)
 
 // Hide navbar/footer/etc while on auth page
 onBeforeMount(() => {
@@ -72,6 +74,20 @@ const signIn = async () => {
   await router.push('/dashboard-default')
 }
 
+const resetPassword = async () => {
+  errorMessage.value = ''
+
+  const { error } = await supabase.auth.resetPasswordForEmail(premail.value, {  redirectTo: 'http://localhost:8080/resetpassword'})
+
+  if (error) {
+    errorMessage.value = error.message
+  } else {
+    passwordResetRequest.value = false
+    alert("Check your email for a reset link.")
+  }
+}
+
+
 </script>
 
 <template>
@@ -80,7 +96,8 @@ const signIn = async () => {
       <div class="page-header min-vh-100">
         <div class="container">
           <div class="row">
-            <div class="mx-auto col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0">
+
+            <div v-if="!passwordResetRequest" class="mx-auto col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0">
               <div class="card card-plain">
                 <div class="pb-0 card-header text-start">
                   <h4 class="font-weight-bolder">Sign In</h4>
@@ -108,7 +125,45 @@ const signIn = async () => {
                     <div class="pt-3">
                       <p>
                         Don't have an account?
-                        <router-link to="/signup" class="text-primary fw-bold">Sign Up!</router-link>
+                        <router-link @click="resetPassword" to="/signup" class="text-primary fw-bold">Sign
+                          Up!</router-link>
+                      </p>
+                    </div>
+
+                    <div>
+                      <p>
+                        Forgot Password?
+                        <span @click="passwordResetRequest = true" class="text-primary fw-bold pointer">Reset</span>
+                      </p>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div v-else-if="passwordResetRequest" class="mx-auto col-xl-4 col-lg-5 col-md-7 d-flex flex-column mx-lg-0">
+              <div class="card card-plain">
+                <div class="pb-0 card-header text-start">
+                  <h4 class="font-weight-bolder">Password Reset</h4>
+                  <p class="mb-0">Enter your email to receive a password reset link</p>
+                </div>
+                <div class="card-body">
+                  <form role="form" @submit.prevent="resetPassword">
+                    <div class="mb-3">
+                      <argon-input v-model="premail" id="premail" type="premail" placeholder="email" name="premail" size="lg" />
+                    </div>
+
+                    <div class="text-center">
+                      <argon-button class="custom-login-btn mt-4" fullWidth size="lg">Send Password Reset Email</argon-button>
+                    </div>
+
+                    <div v-if="errorMessage" class="text-danger mt-2 text-sm">
+                      {{ errorMessage }}
+                    </div>
+
+                    <div class="mt-4">
+                      <p>
+                        <span @click="passwordResetRequest = false" class="text-primary fw-bold pointer">Back</span>
                       </p>
                     </div>
 
@@ -116,6 +171,7 @@ const signIn = async () => {
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -132,5 +188,9 @@ const signIn = async () => {
 
 .custom-login-btn:hover {
   opacity: 0.95;
+}
+
+.pointer {
+  cursor: pointer;
 }
 </style>
