@@ -174,7 +174,7 @@ const deleteUserAndData = async () => {
             <p class="mb-0 font-weight-bold text-sm">Customize your profile and theme</p>
           </div>
           <div>
-            <button class="btn btn-danger" @click="deleteUserAndData">
+            <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two || '#f5f5f5', color: member?.themes?.light_one }" @click="deleteUserAndData">
               Delete My Account
             </button>
           </div>

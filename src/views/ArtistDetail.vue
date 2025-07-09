@@ -275,28 +275,6 @@ const deleteSong = async (songId) => {
       :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5', color: member?.themes?.dark_one || '#333' }">
       <div class="card-body d-flex flex-wrap align-items-center justify-content-between">
         <h3 class="mb-0">{{ artist?.name }}</h3>
-
-        <!-- Add album button -->
-        <div v-if="isOwner && !showAlbumInput">
-          <button class="btn ombre-overlay"
-            :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
-            @click="showAlbumInput = true">
-            + Add Album
-          </button>
-        </div>
-
-        <!-- Album input form -->
-        <div v-else-if="isOwner" class="d-flex gap-2 mt-2 w-100 flex-wrap">
-          <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
-            :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }" />
-          <button class="btn ombre-overlay"
-            :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }" @click="addAlbum">
-            Add
-          </button>
-          <button class="btn btn-secondary ombre-overlay" @click="showAlbumInput = false">
-            Cancel
-          </button>
-        </div>
       </div>
     </div>
 
@@ -304,13 +282,37 @@ const deleteSong = async (songId) => {
     <div class="row mb-4">
 
       <div class="col-12">
-        <artist-ranking-card :albums="albums" :isOwner="isOwner" />
+        <artist-ranking-card :theme="member?.themes" :albums="albums" :isOwner="isOwner" />
       </div>
 
       <div class="col-12">
         <div class="card" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
           <div class="card-body">
-            <h5 class="card-title">Album Ranking</h5>
+            <div class="d-inline-flex d-flex justify-content-between">
+              <h5 class="card-title">Album Ranking</h5>
+              <!-- Add album button -->
+              <div v-if="isOwner && !showAlbumInput">
+                <button class="btn ombre-overlay"
+                  :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+                  @click="showAlbumInput = true">
+                  + Add Album
+                </button>
+              </div>
+
+              <!-- Album input form -->
+              <div v-else-if="isOwner" class="d-flex gap-2 mt-2 w-100 flex-wrap">
+                <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
+                  :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }" />
+                <button class="btn ombre-overlay"
+                  :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+                  @click="addAlbum">
+                  Add
+                </button>
+                <button class="btn btn-secondary ombre-overlay" @click="showAlbumInput = false">
+                  Cancel
+                </button>
+              </div>
+            </div>
 
             <!-- Draggable or read-only list -->
             <draggable v-if="isOwner" v-model="albums" item-key="id" @end="updateAlbumOrder" tag="ul"

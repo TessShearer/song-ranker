@@ -6,6 +6,7 @@ import draggable from 'vuedraggable'
 
 const route = useRoute()
 const props = defineProps({
+    theme: Object,
   isOwner: Boolean,
 })
 
@@ -104,14 +105,14 @@ const updateSongOrder = async () => {
 </script>
 
 <template>
-    <div class="card my-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
+    <div v-if="theme" class="card my-4" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
+        <div class="card-header d-flex justify-content-between align-items-center" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
             <h5 class="mb-0">Entire Ranked Discography</h5> {{ artistId }}
             <div>
-                <button v-if="!editing && props.isOwner" class="btn btn-sm btn-success me-2" @click="editing = true">
+                <button v-if="!editing && props.isOwner && expanded" class="btn btn-sm btn-success me-2" @click="editing = true">
                     I'm Ready to Rank
                 </button>
-                <button v-if="editing && props.isOwner" class="btn btn-sm btn-secondary" @click="editing = false">
+                <button v-if="editing && props.isOwner && expanded" class="btn btn-sm btn-secondary" @click="editing = false">
                     Done Ranking
                 </button>
                 <button v-if="!editing" class="btn btn-sm btn-outline-primary" @click="expanded = !expanded">
@@ -119,8 +120,7 @@ const updateSongOrder = async () => {
                 </button>
             </div>
         </div>
-
-        <div v-if="expanded" class="card-body">
+        <div v-if="expanded" class="card-body" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
             <table class="table">
                 <thead>
                     <tr>
