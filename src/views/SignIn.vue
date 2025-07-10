@@ -30,7 +30,7 @@ onBeforeUnmount(() => {
 onMounted(async () => {
   // Check if store already has user
   if (store.state.user) {
-    router.push('/dashboard-default')
+    router.push('/')
     return
   }
 
@@ -38,7 +38,7 @@ onMounted(async () => {
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
   if (!sessionError && sessionData.session) {
     await store.dispatch('fetchUser') // populate store.user + store.member
-    router.push('/dashboard-default')
+    router.push('/')
   }
 })
 
@@ -71,7 +71,7 @@ const signIn = async () => {
     store.commit('setMember', memberData)
   }
 
-  await router.push('/dashboard-default')
+  await router.push('/')
 }
 
 const resetPassword = async () => {

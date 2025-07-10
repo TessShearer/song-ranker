@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Dashboard from "../views/DashboardView.vue";
+import store from '@/store'
+import { supabase } from '@/supabaseClient'
+
+
 import Tables from "../views/TablesView.vue";
 import Profile from "../views/ProfileView.vue";
 import Signup from "../views/SignUp.vue";
@@ -7,17 +10,41 @@ import Signin from "../views/SignIn.vue";
 import ResetPassword from "../views/ResetPassword.vue";
 import ArtistDetail from "../views/ArtistDetail.vue";
 import ForbiddenView from "../views/ForbiddenView.vue";
+import MemberAddCard from "../examples/Cards/MemberAddCard.vue";
 
 const routes = [
   {
-    path: "/",
-    name: "/",
-    redirect: "/dashboard-default",
+    path: '/',
+    name: 'RootRedirect',
+    beforeEnter: async (to, from, next) => {
+      const member = store.state.member
+      const user = store.state.user
+
+      if (member?.music_id) {
+        next(`/members/${member.music_id}/tables`)
+      } else if (user?.id) {
+        const { data } = await supabase
+          .from('members')
+          .select('music_id')
+          .eq('member_id', user.id)
+          .single()
+
+        if (data?.music_id) {
+          store.commit('setMember', data)
+          next(`/members/${data.music_id}/tables`)
+        } else {
+          next('/create-member')
+        }
+      } else {
+          next('/signin')
+      }
+    }
   },
+
   {
-    path: "/dashboard-default",
-    name: "Dashboard",
-    component: Dashboard,
+    path: "/create-member",
+    name: "MemberAddCard",
+    component: MemberAddCard,
   },
   {
     path: '/members/:memberId/tables',

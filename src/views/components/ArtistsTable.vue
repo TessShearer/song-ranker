@@ -77,7 +77,7 @@ const handleArtistAdded = () => {
 
     <div class="card mt-n6" :style="{ backgroundColor: tableBackground }">
       <div class="card-body px-0 pt-0 pb-2">
-        <div class="table-responsive p-0">
+        <div class="table-responsive p-0 mx-2">
           <table class="table align-items-center mb-0">
             <thead>
               <tr>
@@ -109,9 +109,9 @@ const handleArtistAdded = () => {
                 <td>{{ artist.songCount }} Song{{ artist.songCount !== 1 ? 's' : '' }}</td>
                 <td>
                   <button
-                    class="btn ombre-overlay"
+                    class="btn btn-outline"
                     @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)"
-                    :style="{ backgroundColor: props.theme?.dark_two, color: props.theme?.light_one }"
+                    :style="{ color: props.theme?.dark_one, border: 'solid 1px' + props.theme?.dark_one }"
                   >
                     {{ isOwner ? 'Rank' : 'View Rankings' }}
                   </button>

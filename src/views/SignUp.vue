@@ -33,7 +33,7 @@ onMounted(async () => {
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
   if (!sessionError && sessionData.session) {
     await store.dispatch('fetchUser')
-    router.push('/dashboard-default')
+    router.push('/')
   }
 })
 
