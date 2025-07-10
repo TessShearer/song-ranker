@@ -7,7 +7,7 @@ import draggable from 'vuedraggable'
 const route = useRoute()
 const props = defineProps({
     theme: Object,
-  isOwner: Boolean,
+    isOwner: Boolean,
 })
 
 const editing = ref(false)
@@ -19,103 +19,107 @@ const error = ref(null)
 const artistId = route.params.artistId
 
 const fetchSongsAndAlbums = async () => {
-  const { data: songData, error: songErr } = await supabase
-    .from('songs')
-    .select('*, albums!inner(id, title)')
-    .eq('artist_id', artistId)
+    const { data: songData, error: songErr } = await supabase
+        .from('songs')
+        .select('*, albums!inner(id, title)')
+        .eq('artist_id', artistId)
 
-  if (songErr) {
-    error.value = songErr.message
-    return
-  }
-
-  allSongs.value = songData
-
-  // Extract ranked songs and sort them
-  rankedList.value = songData
-    .filter(song => song.artist_ranking != null)
-    .sort((a, b) => a.artist_ranking - b.artist_ranking)
-
-  // Extract unique albums
-  const grouped = {}
-  songData.forEach(song => {
-    const albumId = song.albums.id
-    if (!grouped[albumId]) {
-      grouped[albumId] = {
-        id: albumId,
-        title: song.albums.title,
-        songs: [],
-      }
+    if (songErr) {
+        error.value = songErr.message
+        return
     }
-    grouped[albumId].songs.push(song)
-  })
 
-  albums.value = Object.values(grouped)
+    allSongs.value = songData
+
+    // Extract ranked songs and sort them
+    rankedList.value = songData
+        .filter(song => song.artist_ranking != null)
+        .sort((a, b) => a.artist_ranking - b.artist_ranking)
+
+    // Extract unique albums
+    const grouped = {}
+    songData.forEach(song => {
+        const albumId = song.albums.id
+        if (!grouped[albumId]) {
+            grouped[albumId] = {
+                id: albumId,
+                title: song.albums.title,
+                songs: [],
+            }
+        }
+        grouped[albumId].songs.push(song)
+    })
+
+    albums.value = Object.values(grouped)
 }
 
 watchEffect(() => {
-  if (expanded.value) {
-    fetchSongsAndAlbums()
-  }
+    if (expanded.value) {
+        fetchSongsAndAlbums()
+    }
 })
 
 const unrankedTopSongsPerAlbum = computed(() => {
-  return albums.value.map(album => {
-    const unranked = album.songs
-      .filter(song => song.artist_ranking == null)
-      .sort((a, b) => a.album_ranking - b.album_ranking)
-      .slice(0, 4)
+    return albums.value.map(album => {
+        const unranked = album.songs
+            .filter(song => song.artist_ranking == null)
+            .sort((a, b) => a.album_ranking - b.album_ranking)
+            .slice(0, 4)
 
-    return {
-      ...album,
-      topSongs: unranked,
-    }
-  })
+        return {
+            ...album,
+            topSongs: unranked,
+        }
+    })
 })
 
 const addSongToRanking = async (song) => {
-  const maxRank = Math.max(
-    0,
-    ...rankedList.value.map(s => s.artist_ranking || 0)
-  )
-  const newRank = maxRank + 1
+    const maxRank = Math.max(
+        0,
+        ...rankedList.value.map(s => s.artist_ranking || 0)
+    )
+    const newRank = maxRank + 1
 
-  const { error: updateError } = await supabase
-    .from('songs')
-    .update({ artist_ranking: newRank })
-    .eq('id', song.id)
+    const { error: updateError } = await supabase
+        .from('songs')
+        .update({ artist_ranking: newRank })
+        .eq('id', song.id)
 
-  if (!updateError) {
-    await fetchSongsAndAlbums()
-  } else {
-    error.value = updateError.message
-  }
+    if (!updateError) {
+        await fetchSongsAndAlbums()
+    } else {
+        error.value = updateError.message
+    }
 }
 
 const updateSongOrder = async () => {
-  for (let i = 0; i < rankedList.value.length; i++) {
-    const song = rankedList.value[i]
-    await supabase
-      .from('songs')
-      .update({ artist_ranking: i + 1 })
-      .eq('id', song.id)
-  }
-  await fetchSongsAndAlbums()
+    for (let i = 0; i < rankedList.value.length; i++) {
+        const song = rankedList.value[i]
+        await supabase
+            .from('songs')
+            .update({ artist_ranking: i + 1 })
+            .eq('id', song.id)
+    }
+    await fetchSongsAndAlbums()
 }
 </script>
 
 <template>
     <div v-if="theme" class="card pb-3 my-4" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
-        <div class="card-header d-flex justify-content-between align-items-center" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
+        <div class="card-header d-flex justify-content-between align-items-center"
+            :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
             <h5 class="mb-0">Entire Ranked Discography</h5>
             <div>
-                <button v-if="!editing && props.isOwner && expanded" class="btn btn-sm me-2" :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = true">
+                <button v-if="!editing && props.isOwner && expanded" class="btn btn-sm me-2"
+                    :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = true">
                     I'm Ready to Rank
                 </button>
-                <button v-if="editing && props.isOwner && expanded" class="btn btn-sm" :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = false">
+                <button v-if="editing && props.isOwner && expanded" class="btn btn-sm"
+                    :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = false">
                     Done Ranking
                 </button>
-                <button v-if="!editing" class="btn btn-sm ombre-overlay fs-6" :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="expanded = !expanded">
+                <button v-if="!editing" class="btn btn-sm ombre-overlay fs-6"
+                    :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="expanded = !expanded">
                     {{ expanded ? '-' : '+' }}
                 </button>
             </div>
@@ -155,20 +159,27 @@ const updateSongOrder = async () => {
             <!-- Ranking Section -->
             <div v-if="editing && props.isOwner">
                 <h6 class="mt-4 mb-2">Top Unranked Songs Per Album</h6>
-                <div v-for="album in unrankedTopSongsPerAlbum" :key="album.id" class="mb-3">
-                    <strong>{{ album.title }}</strong>
-                    <ul class="list-group">
-                        <li v-for="(song, index) in album.topSongs" :key="song.id"
-                            class="list-group-item d-flex justify-content-between align-items-center"
-                            :class="{ 'text-muted': index === 3, 'bg-light': index === 3 }">
-                            <span>#{{ song.album_ranking }} - {{ song.title }}</span>
-                            <button v-if="index < 3" class="btn btn-sm btn-outline-success"
-                                @click="addSongToRanking(song)">
-                                +
-                            </button>
-                        </li>
-                    </ul>
+                <div class="d-flex flex-wrap gap-3">
+                    <div v-for="album in unrankedTopSongsPerAlbum" :key="album.id"
+                        class="card small-album-card"
+                        :style="{ backgroundColor: theme.light_two, color: theme.dark_one, minWidth: '200px', maxWidth: '240px' }">
+                        <div class="card-header py-2 px-3">
+                            <strong>{{ album.title }}</strong>
+                        </div>
+                        <ul class="list-group list-group-flush h-100">
+                            <li v-for="(song, index) in album.topSongs" :key="song.id"
+                                class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 h-100"
+                                :class="{ 'text-muted': index === 3, 'bg-light': index === 3 }">
+                                <span style="font-size: 0.85rem;">#{{ song.album_ranking }} - {{ song.title }}</span>
+                                <button v-if="index < 3" class="btn btn-sm btn-outline-success my-auto py-0 px-2"
+                                    style="font-size: 0.75rem;" @click="addSongToRanking(song)">
+                                    +
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+
             </div>
         </div>
 
@@ -195,4 +206,5 @@ const updateSongOrder = async () => {
 tr {
     cursor: grab;
 }
+
 </style>
