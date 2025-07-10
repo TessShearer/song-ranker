@@ -127,7 +127,9 @@ const resetRanking = async () => {
     <div v-if="theme" class="card pb-3 my-4" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
         <div class="card-header d-flex justify-content-between align-items-center"
             :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
-            <h5 class="mb-0">Entire Ranked Discography</h5>
+            <h5 class="mb-0" v-if="!expanded || (expanded && $screen?.mdAndUp)">
+                Entire Ranked Discography
+            </h5>
             <div>
                 <button v-if="!editing && props.isOwner && expanded" class="btn btn-sm me-2"
                     :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = true">

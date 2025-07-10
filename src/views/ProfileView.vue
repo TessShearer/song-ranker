@@ -208,7 +208,6 @@ watch(member, (newMember) => {
     <div class="py-4 container-fluid">
       <div class="card" :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5' }">
         <div class="card-body">
-          <p class="text-uppercase text-sm">Information</p>
 
           <div class="row">
             <div class="col-md-6">

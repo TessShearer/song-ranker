@@ -68,16 +68,14 @@ const handleArtistAdded = () => {
       </button>
     </div>
 
-    <ArtistAddCard
-      v-if="showArtistModal"
-      :memberMusicId="memberMusicId"
-      @cancel="showArtistModal = false"
-      @added="handleArtistAdded"
-    />
+    <ArtistAddCard v-if="showArtistModal" :memberMusicId="memberMusicId" @cancel="showArtistModal = false"
+      @added="handleArtistAdded" />
 
     <div class="card mt-n6" :style="{ backgroundColor: tableBackground }">
       <div class="card-body px-0 pt-0 pb-2">
-        <div class="table-responsive p-0 mx-2">
+
+        <!-- Visible on md and up -->
+        <div class="table-responsive p-0 mx-2 d-none d-md-block">
           <table class="table align-items-center mb-0">
             <thead>
               <tr>
@@ -88,44 +86,58 @@ const handleArtistAdded = () => {
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-if="loading"
-                class="text-center"
-              >
+              <tr v-if="loading" class="text-center">
                 <td colspan="4" class="py-4">
                   <em>Loading artists...</em>
                 </td>
               </tr>
-
-              <tr
-                v-for="artist in artists"
-                :key="artist.id"
-                style="cursor: pointer;"
-                class="table-row-hover"
-                :style="{ backgroundColor: tableBackground, color: props.theme?.dark_one, }"
-              >
+              <tr v-for="artist in artists" :key="artist.id" class="table-row-hover"
+                :style="{ backgroundColor: tableBackground, color: props.theme?.dark_one }">
                 <td>{{ artist.name }}</td>
                 <td>{{ artist.albumCount }} Album{{ artist.albumCount !== 1 ? 's' : '' }}</td>
                 <td>{{ artist.songCount }} Song{{ artist.songCount !== 1 ? 's' : '' }}</td>
                 <td>
-                  <button
-                    class="btn btn-outline"
-                    @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)"
-                    :style="{ color: props.theme?.dark_one, border: 'solid 1px' + props.theme?.dark_one }"
-                  >
+                  <button class="btn btn-outline" @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)"
+                    :style="{ color: props.theme?.dark_one, border: 'solid 1px ' + props.theme?.dark_one }">
                     {{ isOwner ? 'Rank' : 'View Rankings' }}
                   </button>
                 </td>
               </tr>
-
               <tr v-if="!loading && artists.length === 0">
-                <td colspan="4" class="text-center py-3 text-muted">
-                  No artists found.
-                </td>
+                <td colspan="4" class="text-center py-3 text-muted">No artists found.</td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        <!-- Visible on sm and down -->
+        <div class="d-block d-md-none px-3">
+          <div v-if="loading" class="text-center py-4">
+            <em>Loading artists...</em>
+          </div>
+          <div v-else-if="artists.length === 0" class="text-center text-muted py-3">
+            No artists found.
+          </div>
+          <div v-else>
+            <div v-for="artist in artists" :key="artist.id"
+              class="d-flex justify-content-between align-items-center border-bottom py-2"
+              :style="{ color: props.theme?.dark_one }">
+              <div>
+                <strong>{{ artist.name }}</strong>
+                <div style="font-size: 0.85rem;" class="text-muted">
+                  {{ artist.albumCount }} album{{ artist.albumCount !== 1 ? 's' : '' }}<br />
+                  {{ artist.songCount }} song{{ artist.songCount !== 1 ? 's' : '' }}
+                </div>
+              </div>
+              <button class="btn btn-outline btn-sm" @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)"
+                :style="{ color: props.theme?.dark_one, border: '1px solid ' + props.theme?.dark_one }">
+                {{ isOwner ? 'Rank' : 'View' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+
       </div>
     </div>
   </div>

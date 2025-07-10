@@ -29,8 +29,8 @@ export default createStore({
 
   mutations: {
     // Layout
-    toggleConfigurator(state) {
-      state.showConfig = !state.showConfig;
+    setMobileSidenav(state, value) {
+      state.showMobileSidenav = value
     },
     sidebarMinimize(state) {
       const sidenavShow = document.querySelector("#app");

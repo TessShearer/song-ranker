@@ -37,7 +37,7 @@ onMounted(async () => {
         dark_one
       )
     `)
-    .or(`is_private.eq.false,member_id.eq.${user.value.id}`); // This includes public members + the current user
+    .or(`is_private.eq.false,member_id.eq.${user.value.id}`);
 
   if (memberError) {
     error.value = memberError.message;

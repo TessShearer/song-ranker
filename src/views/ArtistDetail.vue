@@ -304,11 +304,11 @@ const saveNote = async () => {
       :style="{ backgroundColor: member?.themes?.light_one || '#f5f5f5', color: member?.themes?.dark_one || '#333' }">
       <div class="card-body d-flex flex-wrap align-items-center justify-content-between">
         <h3 class="mb-0">{{ artist?.name }}</h3>
-        <button class="btn btn-outline" @click="router.push(`/members/${memberId}/tables`)" :style="{
+        <button class="btn btn-outline my-auto" @click="router.push(`/members/${memberId}/tables`)" :style="{
     border: 'solid 1px' + member?.themes?.dark_one,
     color: member?.themes?.dark_one
   }">
-          &lt; Back to Artists
+          &lt; <span class="d-none d-md-inline">Back to Artists</span>
         </button>
       </div>
     </div>
