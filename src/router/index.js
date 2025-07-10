@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from "../views/DashboardView.vue";
 import Tables from "../views/TablesView.vue";
-import VirtualReality from "../views/VirtualReality.vue";
-import RTL from "../views/RtlView.vue";
 import Profile from "../views/ProfileView.vue";
 import Signup from "../views/SignUp.vue";
 import Signin from "../views/SignIn.vue";
@@ -24,16 +22,6 @@ const routes = [
     path: '/members/:memberId/tables',
     name: "Tables",
     component: Tables,
-  },
-  {
-    path: "/virtual-reality",
-    name: "Virtual Reality",
-    component: VirtualReality,
-  },
-  {
-    path: "/rtl-page",
-    name: "RTL",
-    component: RTL,
   },
   {
     path: "/profile",
