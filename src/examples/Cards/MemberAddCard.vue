@@ -1,7 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { supabase } from '@/supabaseClient'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const user = ref(null)
 const username = ref('')
 const themes = ref([])
@@ -54,7 +56,7 @@ const submitMember = async () => {
     error.value = insertError.message
   } else {
     success.value = 'Member profile created successfully!'
-    window.location.reload()
+    router.push('/profile')
   }
 }
 </script>

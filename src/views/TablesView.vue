@@ -28,6 +28,8 @@ const loadMember = async (userId) => {
   if (!error && memberData) {
     member.value = memberData
     isOwner.value = userId === memberData.member_id
+    store.commit('setTheme', memberData.themes)
+    store.commit('setThemeSource', isOwner.value ? 'self' : 'viewed')
   } else {
     // Redirect to /forbidden if user can't view the member
     router.push('/forbidden')
@@ -65,23 +67,23 @@ onMounted(async () => {
 <template>
   <div v-if="member" class="container-fluid">
     <div class="page-header min-height-200" :style="{
-      backgroundImage: member?.themes?.header ? `url(${member.themes.header})` : '',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      marginRight: '-24px',
-      marginLeft: '-34%',
-      marginTop: '-5%',
-      position: 'relative'
-    }">
+    backgroundImage: member?.themes?.header ? `url(${member.themes.header})` : '',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    marginRight: '-24px',
+    marginLeft: '-34%',
+    marginTop: '-5%',
+    position: 'relative'
+  }">
       <span class="mask" :style="{
-      backgroundColor: member?.themes?.dark_one || '#000',
-      opacity: 0.3,
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
-    }"></span>
+    backgroundColor: member?.themes?.dark_one || '#000',
+    opacity: 0.3,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  }"></span>
     </div>
 
     <div class="row">

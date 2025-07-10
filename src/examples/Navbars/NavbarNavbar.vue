@@ -10,7 +10,8 @@ const router = useRouter()
 // Pull from Vuex store
 const isRTL = computed(() => store.state.isRTL)
 const user = computed(() => store.state.user)
-const member = computed(() => store.state.member)
+const theme = computed(() => store.state.theme)
+
 const userName = computed(() => user.value?.user_metadata?.full_name || user.value?.email || 'Guest')
 
 // Handle logout and clear Vuex state
@@ -27,7 +28,7 @@ const handleLogout = async () => {
       isRTL ? 'top-0 position-sticky z-index-sticky' : '',
       'position-sticky w-100'
     ]" :style="{
-      backgroundColor: member?.themes?.light_one || '#ffffff',
+      backgroundColor: theme?.light_one || '#ffffff',
       zIndex: 1050
     }" id="navbarBlur" data-scroll="true">
     <div class="px-3 py-1 container-fluid d-flex justify-content-between align-items-center">
@@ -36,8 +37,8 @@ const handleLogout = async () => {
       </div>
       <div>
         <button class="btn btn-outline-info btn-sm my-1 mx-4" :style="{
-      borderColor: member?.themes?.dark_two || '#17a2b8',
-      color: member?.themes?.dark_two || '#17a2b8'
+      borderColor: theme?.dark_two || '#17a2b8',
+      color: theme?.dark_two || '#17a2b8'
     }" @click="handleLogout">
           Logout
         </button>

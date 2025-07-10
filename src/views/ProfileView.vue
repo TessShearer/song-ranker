@@ -47,6 +47,8 @@ onMounted(async () => {
 
       if (memberData) {
         store.commit('setMember', memberData);
+        store.commit('setTheme', memberData.themes)
+        store.commit('setThemeSource', 'self')
       }
     }
   }
@@ -83,6 +85,7 @@ const submitChanges = async () => {
   } else {
     store.commit('setMember', updatedData);
     success.value = 'Profile updated!';
+    window.location.reload()
   }
 };
 
@@ -162,6 +165,8 @@ watch(member, (newMember) => {
     updatedName.value = newMember.member_name;
     selectedThemeId.value = newMember.theme_id;
     isPrivate.value = newMember.is_private || false;
+    store.commit('setTheme', newMember.themes)
+    store.commit('setThemeSource', 'self')
   }
 }, { immediate: true });
 

@@ -24,6 +24,7 @@ export default createStore({
     user: null,
     member: null,
     theme: null,
+    themeSource: 'self',
   },
 
   mutations: {
@@ -49,6 +50,12 @@ export default createStore({
     navbarFixed(state) {
       state.isNavFixed = !state.isNavFixed;
     },
+    setTheme(state, theme) {
+      state.theme = theme;
+    },
+    setThemeSource(state, source) {
+      state.themeSource = source; // 'self' or 'viewed'
+    },
 
     // Auth
     setUser(state, user) {
@@ -62,6 +69,7 @@ export default createStore({
       state.user = null;
       state.member = null;
       state.theme = null;
+      state.themeSource = 'self'
     },
   },
 

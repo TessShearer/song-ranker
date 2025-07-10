@@ -173,6 +173,10 @@ onMounted(async () => {
 
   member.value = memberData
 
+  const isOwnerValue = user.value?.id === memberData.member_id
+  store.commit('setTheme', memberData.themes)
+  store.commit('setThemeSource', isOwnerValue ? 'self' : 'viewed')
+
   await loadAlbums()
 })
 
