@@ -105,17 +105,17 @@ const updateSongOrder = async () => {
 </script>
 
 <template>
-    <div v-if="theme" class="card my-4" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
+    <div v-if="theme" class="card pb-3 my-4" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
         <div class="card-header d-flex justify-content-between align-items-center" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
-            <h5 class="mb-0">Entire Ranked Discography</h5> {{ artistId }}
+            <h5 class="mb-0">Entire Ranked Discography</h5>
             <div>
-                <button v-if="!editing && props.isOwner && expanded" class="btn btn-sm btn-success me-2" @click="editing = true">
+                <button v-if="!editing && props.isOwner && expanded" class="btn btn-sm me-2" :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = true">
                     I'm Ready to Rank
                 </button>
-                <button v-if="editing && props.isOwner && expanded" class="btn btn-sm btn-secondary" @click="editing = false">
+                <button v-if="editing && props.isOwner && expanded" class="btn btn-sm" :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = false">
                     Done Ranking
                 </button>
-                <button v-if="!editing" class="btn btn-sm btn-outline-primary" @click="expanded = !expanded">
+                <button v-if="!editing" class="btn btn-sm ombre-overlay fs-6" :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="expanded = !expanded">
                     {{ expanded ? '-' : '+' }}
                 </button>
             </div>
@@ -143,7 +143,7 @@ const updateSongOrder = async () => {
 
                 <!-- fallback read-only view -->
                 <tbody v-else>
-                    <tr v-for="(song, index) in rankedSongs" :key="song.id">
+                    <tr v-for="(song, index) in rankedList" :key="song.id">
                         <td>{{ index + 1 }}</td>
                         <td>{{ song.title }}</td>
                         <td>{{ song.albums.title }}</td>

@@ -102,7 +102,7 @@ const handleArtistAdded = () => {
                 :key="artist.id"
                 style="cursor: pointer;"
                 class="table-row-hover"
-                :style="{ backgroundColor: tableBackground, color: tableTextColor }"
+                :style="{ backgroundColor: tableBackground, color: props.theme?.dark_one, }"
               >
                 <td>{{ artist.name }}</td>
                 <td>{{ artist.albumCount }} Album{{ artist.albumCount !== 1 ? 's' : '' }}</td>
@@ -111,7 +111,7 @@ const handleArtistAdded = () => {
                   <button
                     class="btn ombre-overlay"
                     @click="$router.push(`/artists/${memberMusicId}/${artist.id}`)"
-                    :style="{ backgroundColor: props.theme?.light_two, color: tableTextColor }"
+                    :style="{ backgroundColor: props.theme?.dark_two, color: props.theme?.light_one }"
                   >
                     {{ isOwner ? 'Rank' : 'View Rankings' }}
                   </button>
