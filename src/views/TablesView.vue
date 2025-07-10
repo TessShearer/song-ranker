@@ -4,9 +4,12 @@ import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import { supabase } from '@/supabaseClient'
 import ArtistsTable from './components/ArtistsTable.vue'
+import { useRouter } from 'vue-router'
+
 
 const route = useRoute()
 const store = useStore()
+const router = useRouter()
 
 const loggedInUser = computed(() => store.state.user)
 const musicId = computed(() => route.params.memberId)
@@ -19,11 +22,15 @@ const loadMember = async (userId) => {
     .from('members')
     .select('*, themes(*)')
     .eq('music_id', musicId.value)
+    .or(`is_private.eq.false,member_id.eq.${userId}`)
     .single()
 
   if (!error && memberData) {
     member.value = memberData
     isOwner.value = userId === memberData.member_id
+  } else {
+    // Redirect to /forbidden if user can't view the member
+    router.push('/forbidden')
   }
 }
 
@@ -56,7 +63,7 @@ onMounted(async () => {
 
 
 <template>
-  <div class="container-fluid">
+  <div v-if="member" class="container-fluid">
     <div class="page-header min-height-200" :style="{
       backgroundImage: member?.themes?.header ? `url(${member.themes.header})` : '',
       backgroundSize: 'cover',

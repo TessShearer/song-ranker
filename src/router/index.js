@@ -6,6 +6,7 @@ import Signup from "../views/SignUp.vue";
 import Signin from "../views/SignIn.vue";
 import ResetPassword from "../views/ResetPassword.vue";
 import ArtistDetail from "../views/ArtistDetail.vue";
+import ForbiddenView from "../views/ForbiddenView.vue";
 
 const routes = [
   {
@@ -49,6 +50,11 @@ const routes = [
     name: "ArtistDetail",
     component: ArtistDetail,
     props: true
+  },
+  {
+    path: '/forbidden',
+    name: "ForbiddenView",
+    component: ForbiddenView,
   },
 ];
 

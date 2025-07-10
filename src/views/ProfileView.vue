@@ -3,8 +3,10 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useStore } from 'vuex';
 import { supabase } from '@/supabaseClient';
 import ArgonInput from '@/components/ArgonInput.vue';
+import { useRouter } from 'vue-router'
 
 const store = useStore();
+const router = useRouter()
 
 const user = computed(() => store.state.user);
 const member = computed(() => store.state.member);
@@ -14,6 +16,7 @@ const selectedThemeId = ref(null);
 const updatedName = ref('');
 const success = ref('');
 const error = ref('');
+const isPrivate = ref(false);
 
 // Wait for member to load, then populate fields
 watch(member, (newMember) => {
@@ -69,6 +72,7 @@ const submitChanges = async () => {
     .update({
       member_name: updatedName.value,
       theme_id: selectedThemeId.value,
+      is_private: isPrivate.value,
     })
     .eq('member_id', user.value.id)
     .select('*, themes(*)')
@@ -146,8 +150,20 @@ const deleteUserAndData = async () => {
   // Step 8: Delete auth user (optional and powerful)
   await supabase.auth.admin.deleteUser(userId)
 
-  alert("All data deleted.")
+  alert("All data deleted. You may login with your email at any time to create a new profile.")
+
+  await supabase.auth.signOut()
+  store.commit('clearAuth')
+  router.push('/signin')
 }
+
+watch(member, (newMember) => {
+  if (newMember) {
+    updatedName.value = newMember.member_name;
+    selectedThemeId.value = newMember.theme_id;
+    isPrivate.value = newMember.is_private || false;
+  }
+}, { immediate: true });
 
 </script>
 
@@ -174,7 +190,9 @@ const deleteUserAndData = async () => {
             <p class="mb-0 font-weight-bold text-sm">Customize your profile and theme</p>
           </div>
           <div>
-            <button class="btn" :style="{ backgroundColor: member?.themes?.dark_two || '#f5f5f5', color: member?.themes?.light_one }" @click="deleteUserAndData">
+            <button class="btn"
+              :style="{ backgroundColor: member?.themes?.dark_two || '#f5f5f5', color: member?.themes?.light_one }"
+              @click="deleteUserAndData">
               Delete My Account
             </button>
           </div>
@@ -193,6 +211,19 @@ const deleteUserAndData = async () => {
               <argon-input v-model="updatedName" type="text" />
             </div>
           </div>
+
+          <hr class="horizontal dark" />
+
+          <div class="col-md-6 mt-3">
+            <label class="form-control-label">Private Profile</label>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="privateSwitch" v-model="isPrivate" />
+              <label class="form-check-label" for="privateSwitch">
+                {{ isPrivate ? 'Your profile is hidden from others' : 'Your profile is visible to others' }}
+              </label>
+            </div>
+          </div>
+
 
           <hr class="horizontal dark" />
 

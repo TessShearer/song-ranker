@@ -102,6 +102,25 @@ const updateSongOrder = async () => {
     }
     await fetchSongsAndAlbums()
 }
+
+const resetRanking = async () => {
+    const confirmed = window.confirm(
+        "Are you sure you want to reset the discography rankings for this artist? This will not affect your individual album rankings."
+    )
+    if (!confirmed) return
+
+    const { error: resetError } = await supabase
+        .from('songs')
+        .update({ artist_ranking: null })
+        .eq('artist_id', artistId)
+
+    if (resetError) {
+        error.value = resetError.message
+    } else {
+        await fetchSongsAndAlbums()
+    }
+}
+
 </script>
 
 <template>
@@ -113,6 +132,10 @@ const updateSongOrder = async () => {
                 <button v-if="!editing && props.isOwner && expanded" class="btn btn-sm me-2"
                     :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = true">
                     I'm Ready to Rank
+                </button>
+                <button v-if="editing && props.isOwner && expanded" class="btn btn-sm ms-2 mx-2"
+                    :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="resetRanking">
+                    Reset Ranking
                 </button>
                 <button v-if="editing && props.isOwner && expanded" class="btn btn-sm"
                     :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = false">
@@ -160,8 +183,7 @@ const updateSongOrder = async () => {
             <div v-if="editing && props.isOwner">
                 <h6 class="mt-4 mb-2">Top Unranked Songs Per Album</h6>
                 <div class="d-flex flex-wrap gap-3">
-                    <div v-for="album in unrankedTopSongsPerAlbum" :key="album.id"
-                        class="card small-album-card"
+                    <div v-for="album in unrankedTopSongsPerAlbum" :key="album.id" class="card small-album-card"
                         :style="{ backgroundColor: theme.light_two, color: theme.dark_one, minWidth: '200px', maxWidth: '240px' }">
                         <div class="card-header py-2 px-3">
                             <strong>{{ album.title }}</strong>
@@ -206,5 +228,4 @@ const updateSongOrder = async () => {
 tr {
     cursor: grab;
 }
-
 </style>

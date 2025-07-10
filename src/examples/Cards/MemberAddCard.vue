@@ -6,6 +6,7 @@ const user = ref(null)
 const username = ref('')
 const themes = ref([])
 const selectedThemeId = ref(null)
+const isPrivate = ref(false) // New privacy toggle
 const error = ref('')
 const success = ref('')
 
@@ -45,6 +46,7 @@ const submitMember = async () => {
       member_id: user.value.id,
       member_name: username.value,
       theme_id: selectedThemeId.value,
+      is_private: isPrivate.value // Send privacy value
     }
   ])
 
@@ -59,12 +61,20 @@ const submitMember = async () => {
 
 <template>
   <div class="card bg-transparent shadow-xl p-4">
-    <h4 class="mb-3">Choose a display name and theme to get started.</h4>
+    <h4 class="mb-3">Before we get started please create your profile - these settings can be changed at any time.</h4>
 
     <div class="mb-3">
       <label class="form-label">Username</label>
       <input v-model="username" type="text" class="form-control" placeholder="Enter a username" />
     </div>
+
+    <div class="form-check form-switch mb-3">
+      <input class="form-check-input" type="checkbox" id="privacySwitch" v-model="isPrivate" />
+      <label class="form-check-label" for="privacySwitch">
+        Make my profile private - If you choose this option your rankings will not be visible to others
+      </label>
+    </div>
+
 
     <div class="mb-3">
       <label class="form-label">Choose a Theme</label>

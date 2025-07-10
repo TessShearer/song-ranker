@@ -27,6 +27,9 @@ const albums = ref([])
 const newAlbumName = ref('')
 const error = ref(null)
 const showAlbumInput = ref(false)
+const showNoteModal = ref(false)
+const currentNoteSong = ref(null)
+const noteText = ref('')
 
 const loadAlbums = async () => {
   const { data, error: albumError } = await supabase
@@ -160,10 +163,11 @@ onMounted(async () => {
     .from('members')
     .select('*, themes(*)')
     .eq('music_id', memberId)
+    .or(`is_private.eq.false,member_id.eq.${user.value?.id}`)
     .single()
 
   if (memberError || !memberData) {
-    error.value = memberError?.message || 'Member not found.'
+    router.push('/forbidden')
     return
   }
 
@@ -263,12 +267,30 @@ const deleteSong = async (songId) => {
   await loadAlbums()
 }
 
+const openNoteModal = (song) => {
+  currentNoteSong.value = song
+  noteText.value = song.note || ''
+  showNoteModal.value = true
+}
+
+const saveNote = async () => {
+  const { error } = await supabase
+    .from('songs')
+    .update({ note: noteText.value })
+    .eq('id', currentNoteSong.value.id)
+
+  if (!error) {
+    currentNoteSong.value.note = noteText.value
+    showNoteModal.value = false
+  } else {
+    console.error(error.message)
+  }
+}
 
 </script>
 
-
 <template>
-  <div class="container-fluid py-4">
+  <div v-if="member" class="container-fluid py-4">
 
     <!-- Page header -->
     <div class="card mb-1"
@@ -299,13 +321,16 @@ const deleteSong = async (songId) => {
               <!-- Album input form -->
               <div v-else-if="isOwner" class="gap-2 mt-2 w-50">
                 <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
-                  :style="{ backgroundColor: member?.themes?.light_two + 'CC', color: member?.themes?.dark_one }" />
+                  :style="{ backgroundColor: member?.themes?.light_two + 'CC', color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }" />
                 <div class="d-flex justify-content-end gap-2 mt-2">
-                  <button class="btn ombre-overlay"
-                    :style="{ backgroundColor: 'white', color: member?.themes?.light_one }" @click="addAlbum">
+                  <button class="btn btn-outline"
+                    :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
+                    @click="addAlbum">
                     Add
                   </button>
-                  <button class="btn btn-secondary ombre-overlay" @click="showAlbumInput = false">
+                  <button class="btn btn-outline"
+                    :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
+                    @click="showAlbumInput = false">
                     Cancel
                   </button>
                 </div>
@@ -363,15 +388,22 @@ const deleteSong = async (songId) => {
 
                       <!-- Delete button (left side) -->
                       <div class="d-flex align-items-center">
-                        <button v-if="isOwner" class="btn btn-sm btn-link text-danger px-1 me-2"
+                        <button v-if="isOwner" class="btn btn-sm btn-link text-danger my-auto px-1 me-2"
                           @click="deleteSong(element.id)" title="Delete Song">
                           <i class="fas fa-times"></i>
                         </button>
                         <span>#{{ index + 1 }} - {{ element.title }}</span>
                       </div>
 
-                      <!-- Drag icon -->
-                      <i class="fas fa-grip-lines text-muted"></i>
+                      <!-- Note/Drag icon (right side) -->
+                      <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-link text-muted p-0 mx-2 my-auto" @click="openNoteModal(element)"
+                          v-if="isOwner">
+                          <span v-if="!element.note" class="me-1">+</span>
+                          <i class="fas fa-sticky-note"></i>
+                        </button>
+                        <i class="fas fa-grip-lines text-muted"></i>
+                      </div>
                     </li>
                   </template>
 
@@ -381,33 +413,79 @@ const deleteSong = async (songId) => {
                   <li v-for="(song, index) in album.songs" :key="song.id"
                     class="list-group-item d-flex justify-content-between align-items-center"
                     :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+
                     <span>#{{ index + 1 }} - {{ song.title }}</span>
+
+                    <button class="btn btn-sm btn-link text-muted p-0" @click="openNoteModal(song)"
+                      v-if="song.note && !isOwner">
+                      <i class="fas fa-sticky-note"></i>
+                    </button>
                   </li>
+
                 </ul>
 
                 <div v-if="album.songs.length === 0" class="text-muted mb-2">No songs yet</div>
 
                 <!-- Add Song Section -->
                 <div v-if="isOwner">
-                  <button class="btn ombre-overlay btn-outline-primary btn-sm mb-2"
-                    @click="album.addingSong = !album.addingSong">
-                    {{ album.addingSong ? 'Cancel' : '+ Add Song' }}
+                  <button class="btn btn-outline btn-sm mb-2"
+                    :style="{ border: 'solid 1px' + member?.themes?.dark_one }"
+                    @click="album.addingSong = !album.addingSong" v-if="!album.addingSong">
+                    + Add Song
                   </button>
 
-                  <div v-if="album.addingSong" class="d-flex">
-                    <input v-model="album.newSongName" placeholder="New song title"
-                      class="form-control form-control-sm me-2"
-                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }"
+                  <div v-if="album.addingSong" class="d-flex align-items-start gap-2">
+                    <!-- Input field on the left -->
+                    <input v-model="album.newSongName" placeholder="New song title" class="form-control form-control-sm"
+                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
                       @keyup.enter="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false" />
-                    <button class="btn ombre-overlay btn-sm"
-                      :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
-                      @click="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false">
-                      Add
-                    </button>
+
+                    <!-- Button group stacked vertically on the right -->
+                    <div class="d-flex gap-1">
+                      <button class="btn btn-sm btn-outline" :style="{ border: 'solid 1px' + member?.themes?.dark_one }"
+                        @click="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false">
+                        Add
+                      </button>
+                      <button class="btn btn-sm btn-outline" :style="{ border: 'solid 1px' + member?.themes?.dark_one }"
+                        @click="album.addingSong = false">
+                        Cancel
+                      </button>
+                    </div>
                   </div>
+
                 </div>
 
               </div>
+
+              <!-- Note Modal -->
+              <div v-if="showNoteModal" class="modal fade show d-block" tabindex="-1"
+                style="background: rgba(0,0,0,0.5);">
+                <div class="modal-dialog">
+                  <div class="modal-content"
+                    :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Song Note</h5>
+                      <button type="button" class="btn-close" @click="showNoteModal = false"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p><strong>{{ currentNoteSong?.title }}</strong></p>
+
+                      <textarea v-model="noteText" class="form-control" rows="4" :readonly="!isOwner"
+                        :style="{ color: member?.themes?.dark_one }" />
+                    </div>
+                    <div class="modal-footer">
+                      <button class="btn btn-secondary" @click="showNoteModal = false">
+                        {{ isOwner ? 'Cancel' : 'Done' }}
+                      </button>
+                      <button v-if="isOwner" class="btn btn-primary" @click="saveNote">
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
             </div>
           </div>
         </div>

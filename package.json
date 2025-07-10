@@ -1,11 +1,11 @@
 {
-  "name": "vue-argon-dashboard-2",
+  "name": "song-ranker",
   "version": "4.0.0",
   "private": true,
-  "author": "Creative Tim",
+  "author": "Tess Shearer",
   "license": "SEE LICENSE IN <https://www.creative-tim.com/license>",
-  "description": "VueJS version of Argon Dashboard 2 by Creative Tim",
-  "homepage": "https://demos.creative-tim.com/vue-argon-dashboard/",
+  "description": "Used to Rank Music with Ease",
+  "homepage": "https://tessshearer.github.io/song-ranker/",
   "bugs": {
     "url": "https://github.com/creativetimofficial/vue-argon-dashboard/issues"
   },

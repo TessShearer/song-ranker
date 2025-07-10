@@ -24,25 +24,27 @@ onMounted(async () => {
     error.value = "Could not retrieve user.";
     return;
   }
+
   user.value = userData.user;
 
   const { data: memberData, error: memberError } = await supabase
     .from("members")
     .select(`
-    *,
-    themes (
-      image,
-      light_one,
-      dark_one
-    )
-  `)
+      *,
+      themes (
+        image,
+        light_one,
+        dark_one
+      )
+    `)
+    .or(`is_private.eq.false,member_id.eq.${user.value.id}`); // This includes public members + the current user
 
   if (memberError) {
     error.value = memberError.message;
   } else {
     members.value = memberData;
   }
-})
+});
 
 </script>
 
@@ -53,7 +55,8 @@ onMounted(async () => {
 
       <!-- Dynamic member links -->
       <li class="nav-item" v-for="member in members" :key="member.music_id">
-        <sidenav-item :to="`/members/${member.music_id}/tables`" :navText="member.member_name"
+        <sidenav-item :to="`/members/${member.music_id}/tables`"
+          :navText="member.member_id === user?.id ? `${member.member_name} (You)` : member.member_name"
           :path="member.themes?.image" :background="member.themes?.light_one" :text="member.themes?.dark_one"
           :class="getRoute() === `members/${member.music_id}/tables` ? 'active' : ''" />
       </li>
