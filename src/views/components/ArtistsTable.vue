@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import ArtistAddCard from '../../examples/Cards/ArtistAddCard.vue'
+import ArtistAddCard from './ArtistAddCard.vue'
 import { supabase } from "@/supabaseClient";
 
 const props = defineProps({

@@ -15,9 +15,9 @@ Coded by www.creative-tim.com
 <script setup>
 import { computed, watch, onMounted } from "vue";
 import { useStore } from "vuex";
-import Sidenav from "./examples/Sidenav/indexSidenav.vue";
-import Navbar from "@/examples/Navbars/NavbarNavbar.vue";
-import AppFooter from "@/examples/FooterExample.vue";
+import Sidenav from "./views/components/indexSidenav.vue";
+import Navbar from "@/views/components/NavbarNavbar.vue";
+import AppFooter from "@/views/components/FooterExample.vue";
 import { supabase } from '@/supabaseClient';
 import { useRoute } from 'vue-router';
 

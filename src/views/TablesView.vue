@@ -85,7 +85,6 @@ onMounted(async () => {
     left: 0,
   }"></span>
     </div>
-
     <div class="row">
       <div class="col-12">
         <artists-table :memberMusicId="member?.music_id" :theme="member?.themes" :isOwner="isOwner" />

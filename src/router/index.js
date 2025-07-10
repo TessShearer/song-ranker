@@ -10,7 +10,7 @@ import Signin from "../views/SignIn.vue";
 import ResetPassword from "../views/ResetPassword.vue";
 import ArtistDetail from "../views/ArtistDetail.vue";
 import ForbiddenView from "../views/ForbiddenView.vue";
-import MemberAddCard from "../examples/Cards/MemberAddCard.vue";
+import MemberAddCard from "../views/components/MemberAddCard.vue";
 
 const routes = [
   {
