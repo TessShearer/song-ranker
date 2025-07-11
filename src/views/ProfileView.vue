@@ -12,6 +12,7 @@ const user = computed(() => store.state.user);
 const member = computed(() => store.state.member);
 
 const themes = ref([]);
+const showDeleteConfirm = ref(false)
 const selectedThemeId = ref(null);
 const updatedName = ref('');
 const success = ref('');
@@ -85,80 +86,57 @@ const submitChanges = async () => {
   } else {
     store.commit('setMember', updatedData);
     success.value = 'Profile updated!';
-    window.location.reload()
+    router.push('/profile');
   }
 };
 
-const deleteUserAndData = async () => {
-  const confirmed = confirm("Are you sure? This will delete all your music data permanently.")
+const openDeleteModal = () => {
+  showDeleteConfirm.value = true;
+};
 
-  if (!confirmed) return
-
-  const userId = user.value?.id
+const deleteConfirmed = async () => {
+  const userId = user.value?.id;
 
   // Step 1: Find the member tied to this user
   const { data: memberData, error: memberError } = await supabase
     .from('members')
     .select('*')
     .eq('member_id', userId)
-    .single()
+    .single();
 
   if (memberError || !memberData) {
-    console.error('Member not found:', memberError)
-    return
+    console.error('Member not found:', memberError);
+    return;
   }
 
-  const musicId = memberData.music_id
+  const musicId = memberData.music_id;
 
-  // Step 2: Find all artists for this member
+  // Step 2: Delete songs
   const { data: artists } = await supabase
     .from('artists')
     .select('id')
-    .eq('member_id', musicId)
+    .eq('member_id', musicId);
+  const artistIds = artists.map((a) => a.id);
 
-  const artistIds = artists.map(a => a.id)
-
-  // Step 3: Find all albums for these artists
   const { data: albums } = await supabase
     .from('albums')
     .select('id')
-    .in('artist_id', artistIds)
+    .in('artist_id', artistIds);
+  const albumIds = albums.map((a) => a.id);
 
-  const albumIds = albums.map(a => a.id)
+  await supabase.from('songs').delete().in('album_id', albumIds);
+  await supabase.from('albums').delete().in('id', albumIds);
+  await supabase.from('artists').delete().in('id', artistIds);
+  await supabase.from('members').delete().eq('member_id', userId);
+  await supabase.auth.admin.deleteUser(userId);
 
-  // Step 4: Delete songs first
-  await supabase
-    .from('songs')
-    .delete()
-    .in('album_id', albumIds)
+  alert("All data deleted. You may login with your email at any time to create a new profile.");
 
-  // Step 5: Delete albums
-  await supabase
-    .from('albums')
-    .delete()
-    .in('id', albumIds)
+  await supabase.auth.signOut();
+  store.commit('clearAuth');
+  router.push('/signin');
+};
 
-  // Step 6: Delete artists
-  await supabase
-    .from('artists')
-    .delete()
-    .in('id', artistIds)
-
-  // Step 7: Delete member
-  await supabase
-    .from('members')
-    .delete()
-    .eq('member_id', userId)
-
-  // Step 8: Delete auth user (optional and powerful)
-  await supabase.auth.admin.deleteUser(userId)
-
-  alert("All data deleted. You may login with your email at any time to create a new profile.")
-
-  await supabase.auth.signOut()
-  store.commit('clearAuth')
-  router.push('/signin')
-}
 
 watch(member, (newMember) => {
   if (newMember) {
@@ -197,9 +175,10 @@ watch(member, (newMember) => {
           <div>
             <button class="btn"
               :style="{ backgroundColor: member?.themes?.dark_two || '#f5f5f5', color: member?.themes?.light_one }"
-              @click="deleteUserAndData">
+              @click="openDeleteModal">
               Delete My Account
             </button>
+
           </div>
         </div>
       </div>
@@ -252,6 +231,17 @@ watch(member, (newMember) => {
           </div>
           <div v-if="error" class="text-danger mt-3">{{ error }}</div>
           <div v-if="success" class="text-success mt-3">{{ success }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showDeleteConfirm" class="modal-overlay">
+      <div class="modal-card">
+        <h5>Are you sure?</h5>
+        <p>This will permanently delete your account and all data.</p>
+        <div class="text-end">
+          <button class="btn btn-secondary me-2" @click="showDeleteConfirm = false">Cancel</button>
+          <button class="btn btn-danger" @click="deleteConfirmed">Delete Everything</button>
         </div>
       </div>
     </div>

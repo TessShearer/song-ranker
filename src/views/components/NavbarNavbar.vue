@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/supabaseClient'
+import menu from '@/assets/img/icons/menu.png'
 
 const store = useStore()
 const router = useRouter()
@@ -78,7 +79,7 @@ const handleLogout = async () => {
       <!-- Mobile-only dropdown toggle -->
       <div class="d-xl-none position-relative" ref="dropdownRef">
         <button class="btn btn-outline my-auto" @click="toggleDropdown">
-          <i class="fas fa-bars"></i>
+          <img :src="menu" alt="Menu" class="img-fluid" style="max-height: 18px;" />
         </button>
 
         <ul v-if="showDropdown" class="position-absolute mt-2 shadow rounded dropdown-menu d-block"
@@ -111,7 +112,7 @@ const handleLogout = async () => {
       </div>
 
       <!-- Optionally hide on mobile, keep on desktop -->
-      <div class="d-none d-lg-block">
+      <div class="d-none d-xl-block">
         <h6 class="mb-0">Welcome, {{ userName }}</h6>
       </div>
 

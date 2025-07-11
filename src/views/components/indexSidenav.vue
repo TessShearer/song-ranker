@@ -21,7 +21,7 @@ const userExists = computed(() => !!member.value)
 
   <div v-show="layout === 'default'" class="min-height-300 position-absolute w-100" />
 
-  <aside class="my-3 overflow-auto border-0 sidenav navbar navbar-vertical navbar-expand-xs border-radius-xl" :class="`${isRTL ? 'me-3 rotate-caret fixed-end' : 'fixed-start ms-3'}    
+  <aside class="my-3 overflow-auto border-0 sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg d-none d-lg-block" :class="`${isRTL ? 'me-3 rotate-caret fixed-end' : 'fixed-start ms-3'}    
       ${layout === 'landing' ? 'bg-transparent shadow-none' : ' '
     } ${sidebarType}`" id="sidenav-main">
 

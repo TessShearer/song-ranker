@@ -5,12 +5,18 @@ import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/supabaseClient'
 import draggable from 'vuedraggable'
 import ArtistRankingCard from './components/ArtistRankingCard.vue'
+import trash from '@/assets/img/icons/trash.png'
+import note from '@/assets/img/icons/note.png'
+import menu from '@/assets/img/icons/menu.png'
 
 const store = useStore()
 const route = useRoute()
 const router = useRouter()
 const memberId = route.params.memberId
 const artistId = route.params.artistId
+const showModal = ref(false)
+const modalMessage = ref('')
+const modalAction = ref(null)
 
 const user = computed(() => store.state.user)
 const signedInMember = computed(() => store.state.member)
@@ -30,6 +36,18 @@ const showAlbumInput = ref(false)
 const showNoteModal = ref(false)
 const currentNoteSong = ref(null)
 const noteText = ref('')
+const toastMessage = ref('')
+const showToast = ref(false)
+
+function showToastMessage(message, timeout = 3000) {
+  toastMessage.value = message
+  showToast.value = true
+  setTimeout(() => {
+    showToast.value = false
+    toastMessage.value = ''
+  }, timeout)
+}
+
 
 const loadAlbums = async () => {
   const { data, error: albumError } = await supabase
@@ -122,6 +140,21 @@ const addSong = async (albumId, songName) => {
   }
 }
 
+function showConfirmModal(message, action) {
+  modalMessage.value = message
+  modalAction.value = () => {
+    action()
+    closeModal()
+  }
+  showModal.value = true
+}
+
+function closeModal() {
+  showModal.value = false
+  modalMessage.value = ''
+  modalAction.value = null
+}
+
 onMounted(async () => {
   // Restore user and member if not already in store
   if (!user.value) {
@@ -180,13 +213,16 @@ onMounted(async () => {
   await loadAlbums()
 })
 
-const deleteArtist = async () => {
-  const confirmDelete = confirm(
-    'Are you sure you want to delete this artist? This will permanently delete all albums and songs associated with them.'
+const deleteArtist = () => {
+  showConfirmModal(
+    'Are you sure you want to delete this artist? This will permanently delete all albums and songs associated with them.',
+    async () => {
+      await deleteArtistConfirmed()
+    }
   )
-  if (!confirmDelete) return
+}
 
-  // First delete all songs by artist
+const deleteArtistConfirmed = async () => {
   const { error: songError } = await supabase
     .from('songs')
     .delete()
@@ -197,7 +233,6 @@ const deleteArtist = async () => {
     return
   }
 
-  // Then delete all albums by artist
   const { error: albumError } = await supabase
     .from('albums')
     .delete()
@@ -208,7 +243,6 @@ const deleteArtist = async () => {
     return
   }
 
-  // Finally delete the artist
   const { error: artistError } = await supabase
     .from('artists')
     .delete()
@@ -219,17 +253,19 @@ const deleteArtist = async () => {
     return
   }
 
-  // Redirect to dashboard
+  showToastMessage('Artist deleted successfully.')
   router.push(`/`)
 }
 
-const deleteAlbum = async (albumId) => {
-  const confirmDelete = confirm(
-    'Are you sure you want to delete this album? This will permanently delete the album and all its songs.'
-  )
-  if (!confirmDelete) return
 
-  // Delete songs for the album
+const deleteAlbum = (albumId) => {
+  showConfirmModal('Are you sure you want to delete this album? This will permanently delete the album and all its songs.', async () => {
+    await deleteAlbumConfirmed(albumId)
+    showToastMessage('Album deleted successfully.')
+  })
+}
+
+async function deleteAlbumConfirmed(albumId) {
   const { error: songError } = await supabase
     .from('songs')
     .delete()
@@ -240,7 +276,6 @@ const deleteAlbum = async (albumId) => {
     return
   }
 
-  // Delete the album
   const { error: albumError } = await supabase
     .from('albums')
     .delete()
@@ -254,9 +289,8 @@ const deleteAlbum = async (albumId) => {
   await loadAlbums()
 }
 
+
 const deleteSong = async (songId) => {
-  const confirmDelete = confirm('Are you sure you want to delete this song?')
-  if (!confirmDelete) return
 
   const { error: songError } = await supabase
     .from('songs')
@@ -363,7 +397,7 @@ const saveNote = async () => {
                 <li class="list-group-item d-flex justify-content-between align-items-center"
                   :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
                   <span>#{{ index + 1 }} - {{ element.title }}</span>
-                  <i class="fas fa-grip-lines text-muted"></i>
+                  <img :src="menu" alt="move" class="img-fluid" style="max-height: 12px;" />
                 </li>
               </template>
             </draggable>
@@ -394,7 +428,7 @@ const saveNote = async () => {
                 <button v-if="isOwner" @click="deleteAlbum(album.id)"
                   class="btn btn-sm btn-outline-danger position-absolute" style="top: 10px; right: 10px;"
                   title="Delete Album">
-                  <i class="fas fa-trash"></i>
+                  <img :src="trash" alt="Delete" class="img-fluid" style="max-height: 18px;" />
                 </button>
 
 
@@ -409,7 +443,7 @@ const saveNote = async () => {
                       <div class="d-flex align-items-center">
                         <button v-if="isOwner" class="btn btn-sm btn-link text-danger my-auto px-1 me-2"
                           @click="deleteSong(element.id)" title="Delete Song">
-                          <i class="fas fa-times"></i>
+                          <img :src="trash" alt="trash" class="img-fluid" style="max-height: 12px; min-height: 12px; max-width: 12px; min-width: 12px" />
                         </button>
                         <span>#{{ index + 1 }} - {{ element.title }}</span>
                       </div>
@@ -419,9 +453,9 @@ const saveNote = async () => {
                         <button class="btn btn-sm btn-link text-muted p-0 mx-2 my-auto" @click="openNoteModal(element)"
                           v-if="isOwner">
                           <span v-if="!element.note" class="me-1">+</span>
-                          <i class="fas fa-sticky-note"></i>
+                          <img :src="note" alt="note" class="img-fluid" style="max-height: 18px;" />
                         </button>
-                        <i class="fas fa-grip-lines text-muted"></i>
+                        <img :src="menu" alt="move" class="img-fluid" style="max-height: 12px;" />
                       </div>
                     </li>
                   </template>
@@ -437,7 +471,7 @@ const saveNote = async () => {
 
                     <button class="btn btn-sm btn-link text-muted p-0" @click="openNoteModal(song)"
                       v-if="song.note && !isOwner">
-                      <i class="fas fa-sticky-note"></i>
+                      <img :src="note" alt="note" class="img-fluid" style="max-height: 18px;" />
                     </button>
                   </li>
 
@@ -522,6 +556,23 @@ const saveNote = async () => {
 
     <p v-if="error" class="text-danger mt-3">{{ error }}</p>
   </div>
+
+  <div v-if="showToast" class="toast-message">
+    {{ toastMessage }}
+  </div>
+
+
+  <div v-if="showModal" class="modal-overlay">
+    <div class="modal-card">
+      <h5>Are you sure?</h5>
+      <p>{{ modalMessage }}</p>
+      <div class="text-end">
+        <button class="btn btn-secondary me-2" @click="closeModal">Cancel</button>
+        <button class="btn btn-danger" @click="modalAction">Confirm</button>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <style scoped>
