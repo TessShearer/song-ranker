@@ -63,7 +63,7 @@ onMounted(async () => {
 
       <!-- Settings link -->
       <li class="nav-item">
-        <sidenav-item to="/profile" color="white" :path="'/themes/settings.jpg'" :text="'black'"
+        <sidenav-item to="/profile" color="white" path="/song-ranker/assets/img/settings.jpg" :text="'black'"
           :class="getRoute() === 'profile' ? 'active' : ''" :navText="isRTL ? 'حساب تعريفي' : 'Edit Settings'">
           <template #icon>
             <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
