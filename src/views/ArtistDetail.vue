@@ -452,8 +452,8 @@ const saveNote = async () => {
                       <div class="d-flex align-items-center gap-2">
                         <button class="btn btn-sm btn-link text-muted p-0 mx-2 my-auto" @click="openNoteModal(element)"
                           v-if="isOwner">
-                          <span v-if="!element.note" class="me-1">+</span>
-                          <img :src="note" alt="note" class="img-fluid" style="max-height: 18px;" />
+                          <span v-if="!element.note" class="me-1">+<img :src="note" alt="note" class="img-fluid" style="max-height: 15px; min-height: 15px; max-width: 15px; min-width: 15px" /></span>
+
                         </button>
                         <img :src="menu" alt="move" class="img-fluid" style="max-height: 12px;" />
                       </div>
