@@ -155,31 +155,54 @@ const resetRanking = async () => {
                     <tr>
                         <th>#</th>
                         <th>Title</th>
-                        <th>Album</th>
+                        <!-- Hide album column on small screens -->
+                        <th class="d-none d-sm-table-cell">Album</th>
                     </tr>
                 </thead>
+
+                <!-- Editable Draggable Rows -->
                 <draggable v-if="editing && props.isOwner" v-model="rankedList" item-key="id" tag="tbody"
                     @end="updateSongOrder">
                     <template #item="{ element: song, index }">
                         <tr>
                             <td>{{ index + 1 }}</td>
-                            <td>{{ song.title }}</td>
-                            <td>{{ song.albums.title }}</td>
+                            <td>
+                                {{ song.title }}
+                                <!-- Album subtitle for small screens -->
+                                <div class="text-muted small d-sm-none">
+                                    {{ song.albums.title }}
+                                </div>
+                            </td>
+                            <!-- Album column for medium+ screens -->
+                            <td class="d-none d-sm-table-cell">
+                                {{ song.albums.title }}
+                            </td>
                         </tr>
                     </template>
-
                 </draggable>
 
-                <!-- fallback read-only view -->
+                <!-- Read-only view -->
                 <tbody v-else>
+                    <tr v-if="rankedList.length === 0">
+                        <td colspan="3" class="text-center text-muted py-3">
+                            No songs ranked yet.
+                        </td>
+                    </tr>
                     <tr v-for="(song, index) in rankedList" :key="song.id">
                         <td>{{ index + 1 }}</td>
-                        <td>{{ song.title }}</td>
-                        <td>{{ song.albums.title }}</td>
+                        <td>
+                            {{ song.title }}
+                            <div class="text-muted small d-sm-none">
+                                {{ song.albums.title }}
+                            </div>
+                        </td>
+                        <td class="d-none d-sm-table-cell">
+                            {{ song.albums.title }}
+                        </td>
                     </tr>
                 </tbody>
-
             </table>
+
 
             <!-- Ranking Section -->
             <div v-if="editing && props.isOwner">

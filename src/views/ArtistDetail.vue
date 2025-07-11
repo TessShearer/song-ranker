@@ -320,35 +320,41 @@ const saveNote = async () => {
 
         <div class="card" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
           <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <h5 class="card-title">Album Ranking</h5>
-              <!-- Add album button -->
-              <div v-if="isOwner && !showAlbumInput">
-                <button class="btn ombre-overlay"
-                  :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
-                  @click="showAlbumInput = true">
-                  + Add Album
-                </button>
+            <div class="row align-items-center">
+              <div class="col-12 col-md-6">
+                <h5 class="card-title mb-2 mb-md-0">Album Ranking</h5>
               </div>
 
-              <!-- Album input form -->
-              <div v-else-if="isOwner" class="gap-2 mt-2 w-50">
-                <input v-model="newAlbumName" type="text" class="form-control" placeholder="New album name"
-                  :style="{ backgroundColor: member?.themes?.light_two + 'CC', color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }" />
-                <div class="d-flex justify-content-end gap-2 mt-2">
-                  <button class="btn btn-outline"
-                    :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
-                    @click="addAlbum">
-                    Add
+              <div class="col-12 col-md-6 text-md-end">
+                <!-- Add album button -->
+                <div v-if="isOwner && !showAlbumInput">
+                  <button class="btn ombre-overlay"
+                    :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
+                    @click="showAlbumInput = true">
+                    + Add Album
                   </button>
-                  <button class="btn btn-outline"
-                    :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
-                    @click="showAlbumInput = false">
-                    Cancel
-                  </button>
+                </div>
+
+                <!-- Album input form -->
+                <div v-else-if="isOwner" class="mt-2 mt-md-0">
+                  <input v-model="newAlbumName" type="text" class="form-control mb-2" placeholder="New album name"
+                    :style="{ backgroundColor: member?.themes?.light_two + 'CC', color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }" />
+                  <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-outline"
+                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
+                      @click="addAlbum">
+                      Add
+                    </button>
+                    <button class="btn btn-outline"
+                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
+                      @click="showAlbumInput = false">
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
 
             <!-- Draggable or read-only list -->
             <draggable v-if="isOwner" v-model="albums" item-key="id" @end="updateAlbumOrder" tag="ul"
@@ -447,14 +453,15 @@ const saveNote = async () => {
                     + Add Song
                   </button>
 
-                  <div v-if="album.addingSong" class="d-flex align-items-start gap-2">
-                    <!-- Input field on the left -->
-                    <input v-model="album.newSongName" placeholder="New song title" class="form-control form-control-sm"
-                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
+                  <div v-if="album.addingSong">
+                    <!-- Input field on top -->
+                    <input v-model="album.newSongName" placeholder="New song title"
+                      class="form-control form-control-sm mb-2"
+                      :style="{ backgroundColor: 'white', color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
                       @keyup.enter="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false" />
 
-                    <!-- Button group stacked vertically on the right -->
-                    <div class="d-flex gap-1">
+                    <!-- Button group below -->
+                    <div class="d-flex justify-content-start gap-2">
                       <button class="btn btn-sm btn-outline" :style="{ border: 'solid 1px' + member?.themes?.dark_one }"
                         @click="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false">
                         Add
@@ -465,6 +472,7 @@ const saveNote = async () => {
                       </button>
                     </div>
                   </div>
+
 
                 </div>
 
