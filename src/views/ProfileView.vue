@@ -86,6 +86,7 @@ const submitChanges = async () => {
   } else {
     store.commit('setMember', updatedData);
     success.value = 'Profile updated!';
+    window.location.reload();
     router.push('/profile');
   }
 };
