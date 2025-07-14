@@ -104,11 +104,6 @@ const updateSongOrder = async () => {
 }
 
 const resetRanking = async () => {
-    const confirmed = window.confirm(
-        "Are you sure you want to reset the discography rankings for this artist? This will not affect your individual album rankings."
-    )
-    if (!confirmed) return
-
     const { error: resetError } = await supabase
         .from('songs')
         .update({ artist_ranking: null })
