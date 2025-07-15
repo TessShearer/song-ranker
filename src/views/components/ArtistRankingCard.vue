@@ -64,7 +64,7 @@ const unrankedTopSongsPerAlbum = computed(() => {
         const unranked = album.songs
             .filter(song => song.artist_ranking == null)
             .sort((a, b) => a.album_ranking - b.album_ranking)
-            .slice(0, 4)
+            .slice(0, 3)
 
         return {
             ...album,
@@ -211,9 +211,9 @@ const resetRanking = async () => {
                         <ul class="list-group list-group-flush h-100">
                             <li v-for="(song, index) in album.topSongs" :key="song.id"
                                 class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 h-100"
-                                :class="{ 'text-muted': index === 3, 'bg-light': index === 3 }">
+                                :class="{ 'text-muted': index === 2, 'bg-light': index === 2 }">
                                 <span style="font-size: 0.85rem;">#{{ song.album_ranking }} - {{ song.title }}</span>
-                                <button v-if="index < 3" class="btn btn-sm btn-outline-success my-auto py-0 px-2"
+                                <button v-if="index < 2" class="btn btn-sm btn-outline-success my-auto py-0 px-2"
                                     style="font-size: 0.75rem;" @click="addSongToRanking(song)">
                                     +
                                 </button>
