@@ -8,6 +8,7 @@ import ArtistRankingCard from './components/ArtistRankingCard.vue'
 import trash from '@/assets/img/icons/trash.png'
 import note from '@/assets/img/icons/note.png'
 import menu from '@/assets/img/icons/menu.png'
+import pencil from '@/assets/img/icons/pencil.png'
 
 const store = useStore()
 const route = useRoute()
@@ -38,6 +39,10 @@ const currentNoteSong = ref(null)
 const noteText = ref('')
 const toastMessage = ref('')
 const showToast = ref(false)
+const editingAlbumId = ref(null)
+const editingAlbumNameId = ref(null)
+const editedAlbumTitle = ref('')
+const editingRanking = ref(false)
 
 function showToastMessage(message, timeout = 3000) {
   toastMessage.value = message
@@ -48,6 +53,18 @@ function showToastMessage(message, timeout = 3000) {
   }, timeout)
 }
 
+const saveAlbumTitle = async (albumId) => {
+  const { error: updateError } = await supabase
+    .from('albums')
+    .update({ title: editedAlbumTitle.value })
+    .eq('id', albumId)
+
+  if (!updateError) {
+    await loadAlbums()
+  } else {
+    error.value = updateError.message
+  }
+}
 
 const loadAlbums = async () => {
   const { data, error: albumError } = await supabase
@@ -356,12 +373,37 @@ const saveNote = async () => {
           <div class="card-body">
             <div class="row align-items-center">
               <div class="col-12 col-md-6">
-                <h5 class="card-title mb-2 mb-md-0">Album Ranking</h5>
+                <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 mb-md-0">
+                  <div class="d-flex align-items-center gap-2">
+                    <h5 class="card-title mb-0">Album Ranking</h5>
+                    <button v-if="isOwner && !editingRanking" class="btn btn-sm btn-link p-0"
+                      @click="editingRanking = true">
+                      <img :src="pencil" alt="Edit" class="img-fluid" style="max-height: 14px;" />
+                    </button>
+
+                    <!-- Save/Cancel buttons inline -->
+                    <div v-if="isOwner && editingRanking" class="d-flex gap-2">
+                      <button class="btn btn-outline-success btn-sm" :style="{
+    color: member?.themes?.dark_one,
+    borderColor: member?.themes?.dark_one
+  }" @click="editingRanking = false">
+                        Save
+                      </button>
+                      <button class="btn btn-outline-secondary btn-sm" :style="{
+    color: member?.themes?.dark_one,
+    borderColor: member?.themes?.dark_one
+  }" @click="editingRanking = false">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
               <div class="col-12 col-md-6 text-md-end">
                 <!-- Add album button -->
-                <div v-if="isOwner && !showAlbumInput">
+                <div v-if="isOwner && editingRanking && !showAlbumInput">
                   <button class="btn ombre-overlay"
                     :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
                     @click="showAlbumInput = true">
@@ -370,7 +412,7 @@ const saveNote = async () => {
                 </div>
 
                 <!-- Album input form -->
-                <div v-else-if="isOwner" class="mt-2 mt-md-0">
+                <div v-else-if="isOwner && editingRanking" class="mt-2 mt-md-0">
                   <input v-model="newAlbumName" type="text" class="form-control mb-2" placeholder="New album name"
                     :style="{ backgroundColor: member?.themes?.light_two + 'CC', color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }" />
                   <div class="d-flex justify-content-end gap-2">
@@ -391,7 +433,7 @@ const saveNote = async () => {
 
 
             <!-- Draggable or read-only list -->
-            <draggable v-if="isOwner" v-model="albums" item-key="id" @end="updateAlbumOrder" tag="ul"
+            <draggable v-if="isOwner && editingRanking" v-model="albums" item-key="id" @end="updateAlbumOrder" tag="ul"
               class="list-group">
               <template #item="{ element, index }">
                 <li class="list-group-item d-flex justify-content-between align-items-center"
@@ -421,67 +463,119 @@ const saveNote = async () => {
           <div v-for="album in albums" :key="album.id" class="col-md-6 mb-4">
             <div class="card shadow"
               :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-              <div class="card-body position-relative">
-                <h5 class="card-title">{{ album.title }}</h5>
+              <div class="m-4">
 
-                <!-- Delete album button (top right) -->
-                <button v-if="isOwner" @click="deleteAlbum(album.id)"
-                  class="btn btn-sm btn-outline-danger position-absolute" style="top: 10px; right: 10px;"
-                  title="Delete Album">
-                  <img :src="trash" alt="Delete" class="img-fluid" style="max-height: 18px;" />
-                </button>
+                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+                  <!-- Album Title -->
+                  <h5 class="card-title mb-0">
+                    <!-- "Edit Album Name" Button (only during card editing) -->
+                    <div class="mt-2 mt-sm-0 d-flex">
+
+                      <!-- Editable Album Title Input -->
+                      <input v-if="editingAlbumNameId === album.id" v-model="editedAlbumTitle" type="text"
+                        class="form-control form-control-sm" :style="{
+    maxWidth: '250px',
+    flex: '1 1 auto',
+    backgroundColor: member?.themes?.light_two,
+    color: member?.themes?.dark_one,
+    borderColor: member?.themes?.dark_one
+  }" />
+
+                      <!-- Static Album Title -->
+                      <span v-else>
+                        {{ album.title }}
+                      </span>
 
 
-                <!-- Songs List (Draggable if owner, plain list if not) -->
-                <draggable v-if="isOwner" v-model="album.songs" item-key="id" :group="{ name: 'songs-' + album.id }"
-                  @end="updateSongOrder(album)" tag="ul" class="list-group list-group-flush mb-3">
+                      <!-- Save Name Button -->
+                      <button v-if="isOwner && editingAlbumId === album.id && editingAlbumNameId === album.id"
+                        class="btn btn-sm py-2 px-3 mx-3 my-auto" :style="{
+    backgroundColor: member?.themes?.dark_two,
+    color: member?.themes?.light_one
+  }" @click="saveAlbumTitle(album.id); editingAlbumNameId = null">
+                        Save Name
+                      </button>
+
+                      <!-- Edit Name Button -->
+                      <button v-else-if="isOwner && editingAlbumId === album.id && editingAlbumNameId !== album.id"
+                        class="btn btn-sm py-2 px-3 mx-3 my-auto" :style="{
+    backgroundColor: member?.themes?.dark_two,
+    color: member?.themes?.light_one
+  }" @click="() => {
+    editingAlbumNameId = album.id;
+    editedAlbumTitle = album.title;
+  }">
+                        Edit Name
+                      </button>
+                      <!-- Pencil edit icon for album title -->
+                      <button v-if="isOwner && editingAlbumId !== album.id && editingAlbumNameId !== album.id"
+                        class="btn btn-sm btn-link p-0 ms-2"
+                        @click="() => { editingAlbumId = album.id, editedAlbumTitle = album.title }">
+                        <img :src="pencil" alt="Edit" class="img-fluid my-auto" style="max-height: 14px;" />
+                      </button>
+                    </div>
+                  </h5>
+
+                  <!-- Album Edit Actions -->
+                  <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0" v-if="editingAlbumId === album.id">
+                    <button class="btn btn-sm btn-outline-success"
+                      :style="{ color: member?.themes?.dark_one, borderColor: member?.themes?.dark_one }"
+                      @click="saveAlbumTitle(album.id), editingAlbumId = null">
+                      Save
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary"
+                      :style="{ color: member?.themes?.dark_one, borderColor: member?.themes?.dark_one }"
+                      @click="editingAlbumNameId = null, editingAlbumId = null">
+                      Cancel
+                    </button>
+                    <button @click="deleteAlbum(album.id)" class="btn btn-sm btn-outline-danger" title="Delete Album">
+                      <img :src="trash" alt="Delete" class="img-fluid" style="max-height: 18px;" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Songs List -->
+                <draggable v-if="isOwner && editingAlbumId === album.id" v-model="album.songs"
+                  :group="{ name: 'songs-' + album.id }" @end="updateSongOrder(album)" tag="ul"
+                  class="list-group list-group-flush mb-2">
                   <template #item="{ element, index }">
                     <li class="list-group-item d-flex justify-content-between align-items-center"
                       :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-
-                      <!-- Delete button (left side) -->
                       <div class="d-flex align-items-center">
-                        <button v-if="isOwner" class="btn btn-sm btn-link text-danger my-auto px-1 me-2"
-                          @click="deleteSong(element.id)" title="Delete Song">
-                          <img :src="trash" alt="trash" class="img-fluid" style="max-height: 12px; min-height: 12px; max-width: 12px; min-width: 12px" />
+                        <button v-if="isOwner && editingAlbumId === album.id"
+                          class="btn btn-sm btn-link text-danger my-auto px-1 me-2" @click="deleteSong(element.id)"
+                          title="Delete Song">
+                          <p class="my-auto">x</p>
                         </button>
                         <span>#{{ index + 1 }} - {{ element.title }}</span>
                       </div>
 
-                      <!-- Note/Drag icon (right side) -->
                       <div class="d-flex align-items-center gap-2">
                         <button class="btn btn-sm btn-link text-muted p-0 mx-2 my-auto" @click="openNoteModal(element)"
-                          v-if="isOwner">
+                          v-if="isOwner && editingAlbumId === album.id">
                           <span v-if="!element.note" class="me-1">+</span>
-                          <img :src="note" alt="note" class="img-fluid" style="max-height: 15px; min-height: 15px; max-width: 15px; min-width: 15px" />
-
+                          <img :src="note" alt="note" class="img-fluid"
+                            style="max-height: 15px; min-height: 15px; max-width: 15px; min-width: 15px" />
                         </button>
                         <img :src="menu" alt="move" class="img-fluid" style="max-height: 12px;" />
                       </div>
                     </li>
                   </template>
-
                 </draggable>
 
-                <ul v-else class="list-group list-group-flush mb-3">
+                <!-- Read-only song list -->
+                <ul v-else class="list-group list-group-flush mb-2">
                   <li v-for="(song, index) in album.songs" :key="song.id"
                     class="list-group-item d-flex justify-content-between align-items-center"
                     :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-
                     <span>#{{ index + 1 }} - {{ song.title }}</span>
-
-                    <button class="btn btn-sm btn-link text-muted p-0" @click="openNoteModal(song)"
-                      v-if="song.note && !isOwner">
-                      <img :src="note" alt="note" class="img-fluid" style="max-height: 18px;" />
-                    </button>
                   </li>
-
                 </ul>
 
                 <div v-if="album.songs.length === 0" class="text-muted mb-2">No songs yet</div>
 
                 <!-- Add Song Section -->
-                <div v-if="isOwner">
+                <div v-if="isOwner && editingAlbumId === album.id">
                   <button class="btn btn-outline btn-sm mb-2"
                     :style="{ border: 'solid 1px' + member?.themes?.dark_one }"
                     @click="album.addingSong = !album.addingSong" v-if="!album.addingSong">
@@ -489,13 +583,11 @@ const saveNote = async () => {
                   </button>
 
                   <div v-if="album.addingSong">
-                    <!-- Input field on top -->
                     <input v-model="album.newSongName" placeholder="New song title"
                       class="form-control form-control-sm mb-2"
                       :style="{ backgroundColor: 'white', color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }"
                       @keyup.enter="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false" />
 
-                    <!-- Button group below -->
                     <div class="d-flex justify-content-start gap-2">
                       <button class="btn btn-sm btn-outline" :style="{ border: 'solid 1px' + member?.themes?.dark_one }"
                         @click="addSong(album.id, album.newSongName); album.newSongName = ''; album.addingSong = false">
@@ -507,41 +599,38 @@ const saveNote = async () => {
                       </button>
                     </div>
                   </div>
-
-
                 </div>
 
-              </div>
 
-              <!-- Note Modal -->
-              <div v-if="showNoteModal" class="modal fade show d-block" tabindex="-1"
-                style="background: rgba(0,0,0,0.5);">
-                <div class="modal-dialog">
-                  <div class="modal-content"
-                    :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
-                    <div class="modal-header">
-                      <h5 class="modal-title">Song Note</h5>
-                      <button type="button" class="btn-close" @click="showNoteModal = false"></button>
-                    </div>
-                    <div class="modal-body">
-                      <p><strong>{{ currentNoteSong?.title }}</strong></p>
+                <!-- Note Modal -->
+                <div v-if="showNoteModal" class="modal fade show d-block" tabindex="-1"
+                  style="background: rgba(0,0,0,0.5);">
+                  <div class="modal-dialog">
+                    <div class="modal-content"
+                      :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Song Note</h5>
+                        <button type="button" class="btn-close" @click="showNoteModal = false"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p><strong>{{ currentNoteSong?.title }}</strong></p>
 
-                      <textarea v-model="noteText" class="form-control" rows="4" :readonly="!isOwner"
-                        :style="{ color: member?.themes?.dark_one }" />
-                    </div>
-                    <div class="modal-footer">
-                      <button class="btn btn-secondary" @click="showNoteModal = false">
-                        {{ isOwner ? 'Cancel' : 'Done' }}
-                      </button>
-                      <button v-if="isOwner" class="btn btn-primary" @click="saveNote">
-                        Save
-                      </button>
+                        <textarea v-model="noteText" class="form-control" rows="4" :readonly="!isOwner"
+                          :style="{ color: member?.themes?.dark_one }" />
+                      </div>
+                      <div class="modal-footer">
+                        <button class="btn btn-secondary" @click="showNoteModal = false">
+                          {{ isOwner ? 'Cancel' : 'Done' }}
+                        </button>
+                        <button v-if="isOwner" class="btn btn-primary" @click="saveNote">
+                          Save
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
+
               </div>
-
-
             </div>
           </div>
         </div>

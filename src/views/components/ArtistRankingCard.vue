@@ -16,6 +16,7 @@ const allSongs = ref([])
 const rankedList = ref([])
 const albums = ref([])
 const error = ref(null)
+const showConfirmReset = ref(false)
 const artistId = route.params.artistId
 
 const fetchSongsAndAlbums = async () => {
@@ -103,7 +104,15 @@ const updateSongOrder = async () => {
     await fetchSongsAndAlbums()
 }
 
-const resetRanking = async () => {
+const confirmReset = () => {
+    showConfirmReset.value = true
+}
+
+const cancelReset = () => {
+    showConfirmReset.value = false
+}
+
+const performResetRanking = async () => {
     const { error: resetError } = await supabase
         .from('songs')
         .update({ artist_ranking: null })
@@ -114,7 +123,23 @@ const resetRanking = async () => {
     } else {
         await fetchSongsAndAlbums()
     }
+
+    showConfirmReset.value = false
 }
+
+const removeSongFromRanking = async (song) => {
+    const { error: updateError } = await supabase
+        .from('songs')
+        .update({ artist_ranking: null })
+        .eq('id', song.id)
+
+    if (!updateError) {
+        await fetchSongsAndAlbums()
+    } else {
+        error.value = updateError.message
+    }
+}
+
 
 </script>
 
@@ -131,9 +156,10 @@ const resetRanking = async () => {
                     I'm Ready to Rank
                 </button>
                 <button v-if="editing && props.isOwner && expanded" class="btn btn-sm ms-2 mx-2"
-                    :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="resetRanking">
+                    :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="confirmReset">
                     Reset Ranking
                 </button>
+
                 <button v-if="editing && props.isOwner && expanded" class="btn btn-sm"
                     :style="{ backgroundColor: theme.dark_two, color: theme.light_two }" @click="editing = false">
                     Done Ranking
@@ -160,15 +186,19 @@ const resetRanking = async () => {
                     @end="updateSongOrder">
                     <template #item="{ element: song, index }">
                         <tr>
-                            <td>{{ index + 1 }}</td>
+
                             <td>
-                                {{ song.title }}
-                                <!-- Album subtitle for small screens -->
-                                <div class="text-muted small d-sm-none">
-                                    {{ song.albums.title }}
-                                </div>
+                                <button v-if="editing && props.isOwner"
+                                    class="btn btn-sm btn-outline-danger py-0 px-2 mx-2 my-auto" style="font-size: 0.75rem;"
+                                    @click="removeSongFromRanking(song)" title="Remove from ranked list">
+                                    <i class="fas fa-minus"> - </i>
+                                </button>{{ index + 1 }}
                             </td>
-                            <!-- Album column for medium+ screens -->
+                            <td class="d-flex justify-content-between align-items-center w-100">
+                                <span>{{ song.title }}</span>
+                            </td>
+
+                            <!-- Album name (mobile hidden) -->
                             <td class="d-none d-sm-table-cell">
                                 {{ song.albums.title }}
                             </td>
@@ -227,6 +257,25 @@ const resetRanking = async () => {
 
         <p v-if="error" class="text-danger m-3">{{ error }}</p>
     </div>
+
+    <div v-if="showConfirmReset" class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content" :style="{ backgroundColor: theme.light_two, color: theme.dark_one }">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Reset</h5>
+                    <button type="button" class="btn-close" @click="cancelReset"></button>
+                </div>
+                <div class="modal-body">
+                    <p>This will remove all song rankings for this artist. Are you sure?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @click="cancelReset">Cancel</button>
+                    <button class="btn btn-danger" @click="performResetRanking">Confirm Reset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </template>
 
 <style scoped>
@@ -247,5 +296,13 @@ const resetRanking = async () => {
 
 tr {
     cursor: grab;
+}
+
+.modal {
+    z-index: 1055;
+}
+
+.modal-content {
+    border-radius: 0.5rem;
 }
 </style>
