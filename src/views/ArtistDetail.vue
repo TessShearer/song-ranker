@@ -564,13 +564,14 @@ const saveNote = async () => {
                 </draggable>
 
                 <!-- Read-only song list -->
-                <ul v-else class="list-group list-group-flush mb-2">
-                  <li v-for="(song, index) in album.songs" :key="song.id"
+                <div v-else class="song-list mb-2" :class="{ 'two-columns': album.songs.length >= 10 }">
+                  <div v-for="(song, index) in album.songs" :key="song.id"
                     class="list-group-item d-flex justify-content-between align-items-center"
                     :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
                     <span>#{{ index + 1 }} - {{ song.title }}</span>
-                  </li>
-                </ul>
+                  </div>
+                </div>
+
 
                 <div v-if="album.songs.length === 0" class="text-muted mb-2">No songs yet</div>
 
@@ -668,5 +669,20 @@ const saveNote = async () => {
 <style scoped>
 .list-group-item {
   cursor: grab;
+}
+
+.song-list {
+  column-count: 1;
+  column-gap: rem;
+}
+
+.song-list li {
+  break-inside: avoid;
+}
+
+/* Wrap into 2 columns if 10+ items */
+.song-list.two-columns {
+  column-count: 2;
+  font-size: small;
 }
 </style>

@@ -191,7 +191,7 @@ const removeSongFromRanking = async (song) => {
                                 <button v-if="editing && props.isOwner"
                                     class="btn btn-sm btn-outline-danger py-0 px-2 mx-2 my-auto" style="font-size: 0.75rem;"
                                     @click="removeSongFromRanking(song)" title="Remove from ranked list">
-                                    <i class="fas fa-minus"> - </i>
+                                     - 
                                 </button>{{ index + 1 }}
                             </td>
                             <td class="d-flex justify-content-between align-items-center w-100">
