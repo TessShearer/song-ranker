@@ -79,4 +79,6 @@ body.theme-dark {
     max-width: 400px;
   }
   
-  
+.view-only {
+  cursor: default;
+}

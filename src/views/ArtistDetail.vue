@@ -438,9 +438,9 @@ const saveNote = async () => {
               </template>
             </draggable>
 
-            <ul v-else class="list-group">
+            <ul v-else class="list-group view-only">
               <li v-for="(album, index) in albums" :key="album.id"
-                class="list-group-item d-flex justify-content-between align-items-center"
+                class="list-group-item d-flex justify-content-between view-only align-items-center"
                 :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
                 <span>#{{ index + 1 }} - {{ album.title }}</span>
               </li>
@@ -553,9 +553,9 @@ const saveNote = async () => {
                 </draggable>
 
                 <!-- Read-only song list -->
-                <div v-else class="song-list mb-2" :class="{ 'two-columns': album.songs.length >= 10 }">
+                <div v-else class="song-list mb-2 view-only" :class="{ 'two-columns': album.songs.length >= 10 }">
                   <div v-for="(song, index) in album.songs" :key="song.id"
-                    class="list-group-item d-flex justify-content-between align-items-center"
+                    class="list-group-item d-flex view-only justify-content-between align-items-center"
                     :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
                     <span>#{{ index + 1 }} - {{ song.title }}</span>
 
@@ -681,5 +681,9 @@ const saveNote = async () => {
 .song-list.two-columns {
   column-count: 2;
   font-size: small;
+}
+
+.view-only {
+  cursor: default;
 }
 </style>

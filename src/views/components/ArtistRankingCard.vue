@@ -207,13 +207,13 @@ const removeSongFromRanking = async (song) => {
                 </draggable>
 
                 <!-- Read-only view -->
-                <tbody v-else>
+                <tbody v-else class="view-only">
                     <tr v-if="rankedList.length === 0">
-                        <td colspan="3" class="text-center text-muted py-3">
+                        <td colspan="3" class="text-center view-only text-muted py-3">
                             No songs ranked yet.
                         </td>
                     </tr>
-                    <tr v-for="(song, index) in rankedList" :key="song.id">
+                    <tr v-for="(song, index) in rankedList" :key="song.id" class="view-only">
                         <td>{{ index + 1 }}</td>
                         <td>
                             {{ song.title }}
@@ -304,5 +304,9 @@ tr {
 
 .modal-content {
     border-radius: 0.5rem;
+}
+
+.view-only {
+  cursor: default;
 }
 </style>
