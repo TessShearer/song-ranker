@@ -525,8 +525,8 @@ const saveNote = async () => {
 
                 <!-- Songs List -->
                 <draggable v-if="isOwner && editingAlbumId === album.id" v-model="album.songs"
-                  :group="{ name: 'songs-' + album.id }" @end="updateSongOrder(album)" tag="ul"
-                  class="mb-2 song-list" :class="{ 'two-columns': album.songs.length >= 10 }">
+                  :group="{ name: 'songs-' + album.id }" @end="updateSongOrder(album)" tag="ul" class="mb-2 song-list"
+                  :class="{ 'two-columns': album.songs.length >= 10 }">
                   <template #item="{ element, index }">
                     <li class="list-group-item d-flex justify-content-between align-items-center"
                       :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
@@ -547,6 +547,7 @@ const saveNote = async () => {
                             style="max-height: 15px; min-height: 15px; max-width: 15px; min-width: 15px" />
                         </button>
                       </div>
+
                     </li>
                   </template>
                 </draggable>
@@ -557,6 +558,14 @@ const saveNote = async () => {
                     class="list-group-item d-flex justify-content-between align-items-center"
                     :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
                     <span>#{{ index + 1 }} - {{ song.title }}</span>
+
+                    <div class="d-flex align-items-center gap-2">
+                      <button v-if="song.note" class="btn btn-sm btn-link text-muted p-0 mx-2 my-auto" @click="openNoteModal(song)">
+                        <img :src="note" alt="note" class="img-fluid"
+                          style="max-height: 15px; min-height: 15px; max-width: 15px; min-width: 15px" />
+                      </button>
+                    </div>
+
                   </div>
                 </div>
 
