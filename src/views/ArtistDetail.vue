@@ -557,7 +557,6 @@ const saveNote = async () => {
                           <img :src="note" alt="note" class="img-fluid"
                             style="max-height: 15px; min-height: 15px; max-width: 15px; min-width: 15px" />
                         </button>
-                        <img :src="menu" alt="move" class="img-fluid" style="max-height: 12px;" />
                       </div>
                     </li>
                   </template>
