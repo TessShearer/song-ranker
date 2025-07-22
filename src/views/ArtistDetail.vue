@@ -403,7 +403,7 @@ const saveNote = async () => {
 
               <div class="col-12 col-md-6 text-md-end">
                 <!-- Add album button -->
-                <div v-if="isOwner && editingRanking && !showAlbumInput">
+                <div v-if="isOwner && !showAlbumInput">
                   <button class="btn ombre-overlay"
                     :style="{ backgroundColor: member?.themes?.dark_two, color: member?.themes?.light_one }"
                     @click="showAlbumInput = true">
@@ -412,7 +412,7 @@ const saveNote = async () => {
                 </div>
 
                 <!-- Album input form -->
-                <div v-else-if="isOwner && editingRanking" class="mt-2 mt-md-0">
+                <div v-else-if="isOwner" class="mt-2 mt-md-0">
                   <input v-model="newAlbumName" type="text" class="form-control mb-2" placeholder="New album name"
                     :style="{ backgroundColor: member?.themes?.light_two + 'CC', color: member?.themes?.dark_one, border: 'solid 1px' + member?.themes?.dark_one }" />
                   <div class="d-flex justify-content-end gap-2">
@@ -467,7 +467,7 @@ const saveNote = async () => {
 
                 <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
                   <!-- Album Title -->
-                  <h5 class="card-title mb-0">
+                  <h5 class="card-title mb-2">
                     <!-- "Edit Album Name" Button (only during card editing) -->
                     <div class="mt-2 mt-sm-0 d-flex">
 
@@ -537,7 +537,7 @@ const saveNote = async () => {
                 <!-- Songs List -->
                 <draggable v-if="isOwner && editingAlbumId === album.id" v-model="album.songs"
                   :group="{ name: 'songs-' + album.id }" @end="updateSongOrder(album)" tag="ul"
-                  class="list-group list-group-flush mb-2">
+                  class="mb-2 song-list" :class="{ 'two-columns': album.songs.length >= 10 }">
                   <template #item="{ element, index }">
                     <li class="list-group-item d-flex justify-content-between align-items-center"
                       :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
