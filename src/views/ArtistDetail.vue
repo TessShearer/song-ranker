@@ -389,12 +389,6 @@ const saveNote = async () => {
   }" @click="editingRanking = false">
                         Save
                       </button>
-                      <button class="btn btn-outline-secondary btn-sm" :style="{
-    color: member?.themes?.dark_one,
-    borderColor: member?.themes?.dark_one
-  }" @click="editingRanking = false">
-                        Cancel
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -522,11 +516,6 @@ const saveNote = async () => {
                       :style="{ color: member?.themes?.dark_one, borderColor: member?.themes?.dark_one }"
                       @click="saveAlbumTitle(album.id), editingAlbumId = null">
                       Save
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary"
-                      :style="{ color: member?.themes?.dark_one, borderColor: member?.themes?.dark_one }"
-                      @click="editingAlbumNameId = null, editingAlbumId = null">
-                      Cancel
                     </button>
                     <button @click="deleteAlbum(album.id)" class="btn btn-sm btn-outline-danger" title="Delete Album">
                       <img :src="trash" alt="Delete" class="img-fluid" style="max-height: 18px;" />
