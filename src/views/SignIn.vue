@@ -77,7 +77,16 @@ const signIn = async () => {
 const resetPassword = async () => {
   errorMessage.value = ''
 
-  const { error } = await supabase.auth.resetPasswordForEmail(premail.value, {  redirectTo: 'https://tessshearer.github.io/song-ranker/resetpassword'})
+  // Vite injects this from your vite.config.js ({ base: '/song-ranker/' in prod })
+  const base = import.meta.env.BASE_URL || '/'
+  // Make sure we don't end up with double slashes
+  const normalizedBase = base.endsWith('/') ? base : base + '/'
+  const redirectTo = `${window.location.origin}${normalizedBase}resetpassword`
+
+  // (Optional) sanity log
+  console.log('reset redirectTo:', redirectTo)
+
+  const { error } = await supabase.auth.resetPasswordForEmail(premail.value, { redirectTo })
 
   if (error) {
     errorMessage.value = error.message
