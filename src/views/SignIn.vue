@@ -77,7 +77,7 @@ const signIn = async () => {
 const resetPassword = async () => {
   errorMessage.value = ''
 
-  const { error } = await supabase.auth.resetPasswordForEmail(premail.value, {  redirectTo: 'http://localhost:8080/resetpassword'})
+  const { error } = await supabase.auth.resetPasswordForEmail(premail.value, {  redirectTo: 'https://tessshearer.github.io/song-ranker/resetpassword'})
 
   if (error) {
     errorMessage.value = error.message
