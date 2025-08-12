@@ -85,6 +85,11 @@ const resetPassword = async () => {
 
   // (Optional) sanity log
   console.log('reset redirectTo:', redirectTo)
+  // keep your code, but add this log (you already have one)
+  console.log('origin', window.location.origin);
+  console.log('BASE_URL', import.meta.env.BASE_URL);
+  console.log('redirectTo:', redirectTo);
+
 
   const { error } = await supabase.auth.resetPasswordForEmail(premail.value, { redirectTo })
 
@@ -159,11 +164,13 @@ const resetPassword = async () => {
                 <div class="card-body">
                   <form role="form" @submit.prevent="resetPassword">
                     <div class="mb-3">
-                      <argon-input v-model="premail" id="premail" type="premail" placeholder="email" name="premail" size="lg" />
+                      <argon-input v-model="premail" id="premail" type="premail" placeholder="email" name="premail"
+                        size="lg" />
                     </div>
 
                     <div class="text-center">
-                      <argon-button class="custom-login-btn mt-4" fullWidth size="lg">Send Password Reset Email</argon-button>
+                      <argon-button class="custom-login-btn mt-4" fullWidth size="lg">Send Password Reset
+                        Email</argon-button>
                     </div>
 
                     <div v-if="errorMessage" class="text-danger mt-2 text-sm">
