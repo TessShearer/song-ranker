@@ -77,15 +77,13 @@ const signIn = async () => {
 const resetPassword = async () => {
   errorMessage.value = ''
 
-  // Vite injects this from your vite.config.js ({ base: '/song-ranker/' in prod })
+  const isProd = import.meta.env.PROD
   const base = import.meta.env.BASE_URL || '/'
-  // Make sure we don't end up with double slashes
   const normalizedBase = base.endsWith('/') ? base : base + '/'
-  const redirectTo = `${window.location.origin}${normalizedBase}resetpassword`
+  const redirectTo = isProd
+    ? `${window.location.origin}${normalizedBase}#/resetpassword` // HASH on GH Pages
+    : `${window.location.origin}/resetpassword`                  // plain path in dev
 
-  // (Optional) sanity log
-  console.log('reset redirectTo:', redirectTo)
-  // keep your code, but add this log (you already have one)
   console.log('origin', window.location.origin);
   console.log('BASE_URL', import.meta.env.BASE_URL);
   console.log('redirectTo:', redirectTo);
