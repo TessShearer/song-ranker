@@ -9,6 +9,7 @@ import ArgonDashboard from "./argon-dashboard";
 import { supabase } from '@/supabaseClient'
 
 async function handleSupabaseRecoveryRedirect() {
+
     const hash = window.location.hash.startsWith('#')
       ? window.location.hash.slice(1)
       : window.location.hash

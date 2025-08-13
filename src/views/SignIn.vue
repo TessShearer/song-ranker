@@ -78,25 +78,24 @@ const resetPassword = async () => {
   errorMessage.value = ''
 
   const isProd = import.meta.env.PROD
-  const base = import.meta.env.BASE_URL || '/'
-  const normalizedBase = base.endsWith('/') ? base : base + '/'
-  const redirectTo = isProd
-    ? `${window.location.origin}${normalizedBase}#/resetpassword` // HASH on GH Pages
-    : `${window.location.origin}/resetpassword`                  // plain path in dev
+const base = import.meta.env.BASE_URL || '/'
+const normalizedBase = base.endsWith('/') ? base : base + '/'
+const redirectTo = `${window.location.origin}${normalizedBase}` // <-- no hash route
 
-  console.log('origin', window.location.origin);
-  console.log('BASE_URL', import.meta.env.BASE_URL);
-  console.log('redirectTo:', redirectTo);
+console.log('origin', window.location.origin);
+console.log('BASE_URL', import.meta.env.BASE_URL);
+console.log('redirectTo:', redirectTo);
 
+  await supabase.auth.resetPasswordForEmail(premail.value, { redirectTo })
 
-  const { error } = await supabase.auth.resetPasswordForEmail(premail.value, { redirectTo })
+  // const { error } = await supabase.auth.resetPasswordForEmail(premail.value, { redirectTo })
 
-  if (error) {
-    errorMessage.value = error.message
-  } else {
-    passwordResetRequest.value = false
-    alert("Check your email for a reset link.")
-  }
+  // if (error) {
+  //   errorMessage.value = error.message
+  // } else {
+  //   passwordResetRequest.value = false
+  //   alert("Check your email for a reset link.")
+  // }
 }
 
 
