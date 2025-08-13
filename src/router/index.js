@@ -36,7 +36,7 @@ const routes = [
           next('/create-member')
         }
       } else {
-          next('/signin')
+          next('/resetpassword')
       }
     }
   },
