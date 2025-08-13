@@ -119,7 +119,7 @@ const resetPassword = async () => {
                 </div>
 
                 <div class="card-footer text-center">
-                  <router-link to="/signin">Back to Sign In</router-link>
+                  <router-link to="/signin" class="text-white">Back to Sign In</router-link>
                 </div>
               </div>
             </div>

@@ -19,8 +19,8 @@
     "prettify": "prettier --write .",
     "build": "vite build",
     "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "npm run build && gh-pages -d dist"
+    "predeploy": "vite build && node scripts/make-404.js",
+    "deploy": "gh-pages -d dist -b gh-pages -r https://github.com/tessshearer/song-ranker.git"
   },
   "dependencies": {
     "@popperjs/core": "2.11.8",
