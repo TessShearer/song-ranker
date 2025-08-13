@@ -19,7 +19,7 @@
     "prettify": "prettier --write .",
     "build": "vite build",
     "preview": "vite preview",
-    "predeploy": "vite build && node scripts/make-404.js",
+    "predeploy": "vite build",
     "deploy": "gh-pages -d dist -b gh-pages -r https://github.com/tessshearer/song-ranker.git"
   },
   "dependencies": {
