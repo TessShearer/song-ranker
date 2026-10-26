@@ -4,7 +4,10 @@ import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/supabaseClient'
 import draggable from 'vuedraggable'
-import ArtistRankingCard from './components/ArtistRankingCard.vue'
+// Replaced by DiscographyRankingCard (rank by comparing two songs at a time).
+// import ArtistRankingCard from './components/ArtistRankingCard.vue'
+import DiscographyRankingCard from './components/DiscographyRankingCard.vue'
+import { deleteSession } from '@/ranking/rankingSession'
 import trash from '@/assets/img/icons/trash.png'
 import note from '@/assets/img/icons/note.png'
 import menu from '@/assets/img/icons/menu.png'
@@ -240,6 +243,8 @@ const deleteArtist = () => {
 }
 
 const deleteArtistConfirmed = async () => {
+  await deleteSession(artistId)
+
   const { error: songError } = await supabase
     .from('songs')
     .delete()
@@ -367,7 +372,8 @@ const saveNote = async () => {
     <!-- Album Ranking on Top -->
     <div class="row mb-4">
       <div class="col-12">
-        <artist-ranking-card :theme="member?.themes" :albums="albums" :isOwner="isOwner" />
+        <!-- <artist-ranking-card :theme="member?.themes" :albums="albums" :isOwner="isOwner" /> -->
+        <discography-ranking-card :theme="member?.themes" :isOwner="isOwner" />
 
         <div class="card" :style="{ backgroundColor: member?.themes?.light_one, color: member?.themes?.dark_one }">
           <div class="card-body">

@@ -9,6 +9,7 @@ import Signup from "../views/SignUp.vue";
 import Signin from "../views/SignIn.vue";
 import ResetPassword from "../views/ResetPassword.vue";
 import ArtistDetail from "../views/ArtistDetail.vue";
+import CompareRankingView from "../views/CompareRankingView.vue";
 import ForbiddenView from "../views/ForbiddenView.vue";
 import MemberAddCard from "../views/components/MemberAddCard.vue";
 
@@ -77,6 +78,11 @@ const routes = [
     name: "ArtistDetail",
     component: ArtistDetail,
     props: true
+  },
+  {
+    path: '/artists/:memberId/:artistId/rank',
+    name: "CompareRanking",
+    component: CompareRankingView,
   },
   {
     path: '/forbidden',

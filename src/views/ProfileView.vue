@@ -125,6 +125,7 @@ const deleteConfirmed = async () => {
     .in('artist_id', artistIds);
   const albumIds = albums.map((a) => a.id);
 
+  await supabase.from('ranking_sessions').delete().eq('user_id', userId);
   await supabase.from('songs').delete().in('album_id', albumIds);
   await supabase.from('albums').delete().in('id', albumIds);
   await supabase.from('artists').delete().in('id', artistIds);
